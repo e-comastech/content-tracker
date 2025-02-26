@@ -14,15 +14,20 @@ export default defineConfig({
     rollupOptions: {
       input: {
         landing: resolve(__dirname, 'landing/index.html'),
-        app: resolve(__dirname, 'index.html'),
+        app: resolve(__dirname, 'cct/index.html'),
       },
       output: {
         dir: 'dist',
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'app' ? 'app/[name]-[hash].js' : 'landing/[name]-[hash].js';
+          return chunkInfo.name === 'app' ? 'cct/[name]-[hash].js' : '[name]-[hash].js';
         },
         assetFileNames: (assetInfo) => {
-          return assetInfo.name === 'app' ? 'app/assets/[name]-[hash][extname]' : 'landing/assets/[name]-[hash][extname]';
+          const info = assetInfo.name.split('/');
+          const type = info[0];
+          if (type === 'cct') {
+            return 'cct/assets/[name]-[hash][extname]';
+          }
+          return 'assets/[name]-[hash][extname]';
         }
       }
     }
