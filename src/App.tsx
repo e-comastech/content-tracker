@@ -11,6 +11,8 @@ import { FileCheck, Settings, AlertTriangle, X, Download, Info, HelpCircle, File
 import Papa from 'papaparse';
 import { UserProvider, useUser } from './contexts/UserContext';
 
+const BASE_URL = import.meta.env.BASE_URL;
+
 const AVAILABLE_FIELDS = {
   ProductTitle: 'Product Title',
   Description: 'Description',
@@ -168,7 +170,7 @@ function AppContent() {
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center space-x-4">
                 <img 
-                  src="/logo.png" 
+                  src={`${BASE_URL}logo.png`}
                   alt="Content Comparison Tool" 
                   className="h-32 w-auto"
                   style={{ maxWidth: '600px' }}

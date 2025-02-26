@@ -5,6 +5,11 @@
   force = true
 
 [[redirects]]
+  from = "/assets/*"
+  to = "/cct/assets/:splat"
+  status = 200
+
+[[redirects]]
   from = "/cct"
   to = "/cct/index.html"
   status = 200
@@ -20,7 +25,7 @@
   publish = "dist"
 
 [[headers]]
-  for = "/cct/*"
+  for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block" 
