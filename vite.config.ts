@@ -8,4 +8,8 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   base: '/cct/',
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+  }
 });

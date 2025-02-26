@@ -1,11 +1,17 @@
 [[redirects]]
-  from = "/cct/*"
-  to = "/cct/index.html"
+  from = "/"
+  to = "/index.html"
   status = 200
 
 [[redirects]]
   from = "/cct"
-  to = "/cct/index.html"
+  to = "/cct/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/cct/*"
+  to = "/index.html"
   status = 200
 
 [build]
