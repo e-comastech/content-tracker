@@ -10,5 +10,14 @@ export default defineConfig({
   base: '/cct/',
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      input: {
+        main: './index.html',
+        landing: './public/index.html'
+      },
+      output: {
+        dir: 'dist'
+      }
+    }
   },
 });
