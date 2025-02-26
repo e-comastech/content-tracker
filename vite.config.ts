@@ -7,5 +7,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  base: '/cct/'
+  base: '/cct/',
+  build: {
+    outDir: 'dist/cct',
+    assetsDir: 'assets'
+  }
 });
