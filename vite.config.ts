@@ -16,6 +16,15 @@ export default defineConfig({
         landing: resolve(__dirname, 'landing/index.html'),
         app: resolve(__dirname, 'index.html'),
       },
+      output: {
+        dir: 'dist',
+        entryFileNames: (chunkInfo) => {
+          return chunkInfo.name === 'app' ? 'app/[name]-[hash].js' : 'landing/[name]-[hash].js';
+        },
+        assetFileNames: (assetInfo) => {
+          return assetInfo.name === 'app' ? 'app/assets/[name]-[hash][extname]' : 'landing/assets/[name]-[hash][extname]';
+        }
+      }
     }
   },
 });

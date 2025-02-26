@@ -1,11 +1,11 @@
 [[redirects]]
   from = "/cct/*"
-  to = "/cct/index.html"
+  to = "/app/index.html"
   status = 200
 
 [[redirects]]
-  from = "/"
-  to = "/index.html"
+  from = "/*"
+  to = "/landing/index.html"
   status = 200
 
 [build]
