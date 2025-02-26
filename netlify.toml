@@ -24,4 +24,4 @@
   [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
-    Cache-Control = "public, max-age=0, must-revalidate" 
+    Cache-Control = "no-cache, no-store, must-revalidate" 
