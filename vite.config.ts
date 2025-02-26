@@ -8,20 +8,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  base: '/cct/',
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
     rollupOptions: {
-      output: {
-        assetFileNames: 'assets/[name].[hash][extname]',
-        chunkFileNames: 'assets/[name].[hash].js',
-        entryFileNames: 'assets/[name].[hash].js',
-      },
       input: {
         main: resolve(__dirname, 'index.html'),
         landing: resolve(__dirname, 'public/index.html'),
       },
     },
-  }
+  },
 });
