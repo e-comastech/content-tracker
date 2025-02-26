@@ -1,5 +1,5 @@
 [[redirects]]
-  from = "/cct/*"
+  from = "/*"
   to = "/index.html"
   status = 200
 
@@ -8,7 +8,7 @@
   publish = "dist"
 
 [[headers]]
-  for = "/cct/*"
+  for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block" 
