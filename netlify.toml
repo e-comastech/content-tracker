@@ -1,24 +1,19 @@
 [[redirects]]
   from = "/"
-  to = "/cct"
+  to = "/cct/"
   status = 301
   force = true
 
 [[redirects]]
-  from = "/assets/*"
-  to = "/cct/assets/:splat"
-  status = 200
-
-[[redirects]]
   from = "/cct"
-  to = "/cct/index.html"
-  status = 200
+  to = "/cct/"
+  status = 301
+  force = true
 
 [[redirects]]
   from = "/cct/*"
-  to = "/cct/index.html"
+  to = "/index.html"
   status = 200
-  force = true
 
 [build]
   command = "npm run build"

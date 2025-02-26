@@ -6,12 +6,18 @@ export default defineConfig({
   plugins: [react()],
   base: '/cct/',
   build: {
+    outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name].[hash][extname]',
-        chunkFileNames: 'assets/[name].[hash].js',
-        entryFileNames: 'assets/[name].[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info.pop();
+          const name = info.join('.');
+          return `assets/${name}.${ext}`;
+        },
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
       },
     },
   },
