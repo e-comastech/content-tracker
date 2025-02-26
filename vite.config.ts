@@ -8,16 +8,4 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   base: '/cct/',
-  build: {
-    outDir: 'dist',
-    rollupOptions: {
-      input: {
-        main: './index.html',
-        landing: './public/index.html'
-      },
-      output: {
-        dir: 'dist'
-      }
-    }
-  },
 });
