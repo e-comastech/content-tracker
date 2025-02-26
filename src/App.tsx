@@ -380,7 +380,9 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <UserProvider>
-        <AppContent />
+        <div className="min-h-screen bg-brand-50">
+          <AppContent />
+        </div>
       </UserProvider>
     </GoogleOAuthProvider>
   );

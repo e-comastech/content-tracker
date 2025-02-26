@@ -5,9 +5,15 @@
   force = true
 
 [[redirects]]
-  from = "/cct/*"
-  to = "/index.html"
+  from = "/cct"
+  to = "/cct/index.html"
   status = 200
+
+[[redirects]]
+  from = "/cct/*"
+  to = "/cct/index.html"
+  status = 200
+  force = true
 
 [build]
   command = "npm run build"
