@@ -8,15 +8,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  base: '/cct/',
+  base: '',
   build: {
-    outDir: 'dist/cct',
-    assetsDir: 'assets',
+    outDir: 'dist',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        landing: resolve(__dirname, 'landing/index.html'),
+        app: resolve(__dirname, 'index.html'),
       },
     }
   },
-  publicDir: resolve(__dirname, 'public'),
 });
