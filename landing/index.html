@@ -60,6 +60,97 @@
             color: #666;
             margin-top: 1rem;
         }
+
+        /* Pop-up styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            transform: translateY(50px);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        .popup-overlay.active .popup-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .popup-title {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #2563eb;
+            text-align: center;
+        }
+
+        .popup-message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .popup-button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .popup-button:hover {
+            background-color: #1d4ed8;
+            transform: scale(1.02);
+        }
+
+        @keyframes wave {
+            0% { transform: rotate(0deg); }
+            10% { transform: rotate(14deg); }
+            20% { transform: rotate(-8deg); }
+            30% { transform: rotate(14deg); }
+            40% { transform: rotate(-4deg); }
+            50% { transform: rotate(10deg); }
+            60% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        .wave {
+            display: inline-block;
+            animation: wave 2.5s infinite;
+            transform-origin: 70% 70%;
+        }
     </style>
 </head>
 <body>
@@ -77,5 +168,50 @@
             <!-- More tools can be added here in the future -->
         </div>
     </div>
+
+    <!-- Pop-up -->
+    <div class="popup-overlay">
+        <div class="popup-content">
+            <h2 class="popup-title"><span class="wave">👋</span> Whoa! You Really Found Us!</h2>
+            <p class="popup-message">
+                Welcome to e-Comas' secret tech lab! 🧪<br><br>
+                We're cooking up some amazing tools to make your Amazon life easier.<br><br>
+                This is just the beginning - more cool stuff coming soon!<br><br>
+                Stay tuned and feel free to play with our Content Comparison Tool in the meantime. 🚀
+            </p>
+            <button class="popup-button">Got it!</button>
+        </div>
+    </div>
+
+    <script>
+        // Show popup after a delay if it hasn't been shown before
+        document.addEventListener('DOMContentLoaded', () => {
+            const hasSeenPopup = localStorage.getItem('hasSeenWelcomePopup');
+            
+            if (!hasSeenPopup) {
+                setTimeout(() => {
+                    const popup = document.querySelector('.popup-overlay');
+                    popup.classList.add('active');
+                }, 2000);
+            }
+
+            // Handle popup close
+            const closeButton = document.querySelector('.popup-button');
+            closeButton.addEventListener('click', () => {
+                const popup = document.querySelector('.popup-overlay');
+                popup.classList.remove('active');
+                localStorage.setItem('hasSeenWelcomePopup', 'true');
+            });
+
+            // Close popup when clicking outside
+            const popupOverlay = document.querySelector('.popup-overlay');
+            popupOverlay.addEventListener('click', (e) => {
+                if (e.target === popupOverlay) {
+                    popupOverlay.classList.remove('active');
+                    localStorage.setItem('hasSeenWelcomePopup', 'true');
+                }
+            });
+        });
+    </script>
 </body>
 </html> 
