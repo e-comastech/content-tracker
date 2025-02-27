@@ -64,7 +64,13 @@
         }
 
         .user-info {
-            text-align: right;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-text {
+            text-align: left;
         }
 
         .user-name {
@@ -242,9 +248,9 @@
     <header class="header">
         <div class="header-content">
             <div class="logo-container">
-                <img src="/logo.png" alt="e-Comas Logo" class="logo">
-                <div class="flex items-center gap-4">
-                    <div>
+                <img src="/ecomas-logo.png" alt="e-Comas Logo" class="logo">
+                <div class="user-info">
+                    <div class="user-text">
                         <div class="user-name" id="userName">Loading...</div>
                         <div class="user-email" id="userEmail"></div>
                     </div>
