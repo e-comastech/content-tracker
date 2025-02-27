@@ -3,215 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to e-Comas.tech</title>
+    <title>e-Comas Tech Platform</title>
     <link rel="icon" type="image/png" href="/logo.png">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
+        :root {
+            --brand-blue: #2563eb;
+            --brand-blue-dark: #1d4ed8;
+            --background: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
         body {
             margin: 0;
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-        .logo {
-            max-width: 300px;
-            height: auto;
-            margin-bottom: 2rem;
-        }
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-        .tool-card {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease-in-out;
-            text-decoration: none;
-            color: inherit;
-        }
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .tool-card img {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 1rem;
-        }
-        .tool-card h2 {
-            margin: 0;
-            color: #333;
-            font-size: 1.5rem;
-        }
-        .tool-card p {
-            color: #666;
-            margin-top: 1rem;
+            background-color: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Pop-up styles */
-        .popup-overlay {
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            background: linear-gradient(to bottom, #ffffff, var(--background));
+        }
+
+        .logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 2rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .platform-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 1rem 0 2rem;
+            background: linear-gradient(135deg, var(--brand-blue), var(--brand-blue-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .login-container {
+            animation: fadeInUp 1s ease-out 0.9s both;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            background-color: white;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: var(--brand-blue);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading animation */
+        .loading {
+            display: none;
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            display: none;
+            background: rgba(255, 255, 255, 0.9);
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
         }
 
-        .popup-overlay.active {
+        .loading.active {
             display: flex;
-            opacity: 1;
         }
 
-        .popup-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            transform: translateY(50px);
-            opacity: 0;
-            transition: all 0.3s ease-out;
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--brand-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .popup-overlay.active .popup-content {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .popup-title {
-            font-size: 1.8rem;
-            margin-bottom: 1rem;
-            color: #2563eb;
-            text-align: center;
-        }
-
-        .popup-message {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: #4b5563;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .popup-button {
-            display: block;
-            width: 100%;
-            padding: 1rem;
-            background-color: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .popup-button:hover {
-            background-color: #1d4ed8;
-            transform: scale(1.02);
-        }
-
-        @keyframes wave {
+        @keyframes spin {
             0% { transform: rotate(0deg); }
-            10% { transform: rotate(14deg); }
-            20% { transform: rotate(-8deg); }
-            30% { transform: rotate(14deg); }
-            40% { transform: rotate(-4deg); }
-            50% { transform: rotate(10deg); }
-            60% { transform: rotate(0deg); }
-            100% { transform: rotate(0deg); }
-        }
-
-        .wave {
-            display: inline-block;
-            animation: wave 2.5s infinite;
-            transform-origin: 70% 70%;
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <img src="/ecomas-logo.png" alt="e-Comas Logo" class="logo">
-            <h1>e-Comas Tools</h1>
-        </header>
-        <div class="tools-grid">
-            <a href="/cct/" class="tool-card">
-                <img src="/logo.png" alt="Content Comparison Tool">
-                <h2>Content Comparison Tool</h2>
-                <p>Compare and analyze content across different marketplaces with our advanced comparison tool.</p>
-            </a>
-            <!-- More tools can be added here in the future -->
+    <main class="hero">
+        <img src="/ecomas-logo.png" alt="e-Comas Logo" class="logo">
+        <h1 class="platform-title">e-Comas Tech Platform</h1>
+        <p class="subtitle">Access our suite of powerful tools designed to optimize your Amazon business operations.</p>
+        <div class="login-container">
+            <div id="g_id_onload"
+                data-client_id="609541183936-pae6lf1ff6ef0mle20pub40su621718r.apps.googleusercontent.com"
+                data-context="signin"
+                data-ux_mode="popup"
+                data-callback="handleCredentialResponse"
+                data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin"
+                data-type="standard"
+                data-shape="rectangular"
+                data-theme="outline"
+                data-text="signin_with"
+                data-size="large"
+                data-logo_alignment="left">
+            </div>
         </div>
+    </main>
+
+    <div class="loading">
+        <div class="loading-spinner"></div>
     </div>
 
-    <!-- Pop-up -->
-    <div class="popup-overlay">
-        <div class="popup-content">
-            <h2 class="popup-title"><span class="wave">👋</span> Whoa! You Really Found Us!</h2>
-            <p class="popup-message">
-                Welcome to e-Comas' secret tech lab! 🧪<br><br>
-                We're cooking up some amazing tools to make your Amazon life easier.<br><br>
-                This is just the beginning - more cool stuff coming soon!<br><br>
-                Stay tuned and feel free to play with our Content Comparison Tool in the meantime. 🚀
-            </p>
-            <button class="popup-button">Got it!</button>
-        </div>
-    </div>
+    <footer>
+        <p>© 2024 e-Comas SARL. All rights reserved. Made with ❤️ in Luxembourg.</p>
+    </footer>
 
     <script>
-        // Show popup after a delay if it hasn't been shown before
-        document.addEventListener('DOMContentLoaded', () => {
-            const hasSeenPopup = localStorage.getItem('hasSeenWelcomePopup');
+        function handleCredentialResponse(response) {
+            // Show loading animation
+            document.querySelector('.loading').classList.add('active');
             
-            if (!hasSeenPopup) {
-                setTimeout(() => {
-                    const popup = document.querySelector('.popup-overlay');
-                    popup.classList.add('active');
-                }, 2000);
-            }
-
-            // Handle popup close
-            const closeButton = document.querySelector('.popup-button');
-            closeButton.addEventListener('click', () => {
-                const popup = document.querySelector('.popup-overlay');
-                popup.classList.remove('active');
-                localStorage.setItem('hasSeenWelcomePopup', 'true');
-            });
-
-            // Close popup when clicking outside
-            const popupOverlay = document.querySelector('.popup-overlay');
-            popupOverlay.addEventListener('click', (e) => {
-                if (e.target === popupOverlay) {
-                    popupOverlay.classList.remove('active');
-                    localStorage.setItem('hasSeenWelcomePopup', 'true');
-                }
-            });
-        });
+            // Store the credential
+            localStorage.setItem('googleCredential', response.credential);
+            
+            // Redirect to dashboard
+            window.location.href = '/dashboard/';
+        }
     </script>
 </body>
 </html> 
