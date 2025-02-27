@@ -81,34 +81,34 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, selectedMarketplace
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">Total Products</p>
-            <p className="text-2xl font-semibold">{totalProducts}</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Products</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{totalProducts}</p>
           </div>
-          <BarChart className="w-8 h-8 text-brand-400" />
+          <BarChart className="w-8 h-8 text-brand-400 dark:text-brand-300" />
         </div>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">Perfect Matches</p>
-            <p className="text-2xl font-semibold">{stats.perfectMatches}</p>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Perfect Matches</p>
+            <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{stats.perfectMatches}</p>
           </div>
-          <PieChart className="w-8 h-8 text-brand-400" />
+          <PieChart className="w-8 h-8 text-brand-400 dark:text-brand-300" />
         </div>
       </div>
 
-      <div className="col-span-full bg-white p-6 rounded-lg shadow relative">
+      <div className="col-span-full bg-white dark:bg-gray-800 p-6 rounded-lg shadow relative">
         <div className="flex justify-between items-center mb-4">
-          <p className="text-sm font-medium text-gray-500">
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
             Field Match Rates
           </p>
           <button
             onClick={handleExport}
-            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+            className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 dark:focus:ring-offset-gray-800"
           >
             <Download className="w-4 h-4 mr-1.5" />
             Export as PNG
@@ -117,20 +117,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, selectedMarketplace
         <div ref={fieldMatchRatesRef} className="relative">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(fieldStats).map(([field, { average, highMatchCount }]) => (
-              <div key={field} className="bg-brand-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-900 mb-2">{field}</h3>
+              <div key={field} className="bg-brand-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-2">{field}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">Average Match:</span>
-                    <span className="text-sm font-medium">{average.toFixed(2)}%</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Average Match:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{average.toFixed(2)}%</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-500">≥90% Match:</span>
-                    <span className="text-sm font-medium">{highMatchCount} products</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">≥90% Match:</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{highMatchCount} products</span>
                   </div>
-                  <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="mt-2 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-brand-400 rounded-full"
+                      className="h-full bg-brand-400 dark:bg-brand-500 rounded-full"
                       style={{ width: `${average}%` }}
                     />
                   </div>
@@ -138,7 +138,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ stats, selectedMarketplace
               </div>
             ))}
           </div>
-          <div className="absolute bottom-0 right-0 text-xs text-gray-400 mt-4 p-2">
+          <div className="absolute bottom-0 right-0 text-xs text-gray-400 dark:text-gray-500 mt-4 p-2">
             {selectedMarketplace ? `Marketplace: ${selectedMarketplace}` : 'All Marketplaces'} | 
             Fields Selected: {selectedFieldsCount} | 
             Generated: {new Date().toLocaleDateString()}

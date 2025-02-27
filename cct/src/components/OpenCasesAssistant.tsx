@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Download, Check, AlertCircle, Copy, CheckCheck, FileOutput } from 'lucide-react';
 import type { Cell } from 'exceljs';
 import ExcelJS from 'exceljs';
@@ -20,160 +20,115 @@ interface BatchFile {
 export const OpenCasesAssistant: React.FC<OpenCasesAssistantProps> = ({ 
   results, 
   selectedFields,
-  selectedMarketplace 
+  selectedMarketplace
 }) => {
-  const [downloadedFiles, setDownloadedFiles] = useState<Set<number>>(new Set());
-  const [copiedMessages, setCopiedMessages] = useState<Set<number>>(new Set());
+  const [batches, setBatches] = useState<BatchFile[]>([]);
+  const [batchSize, setBatchSize] = useState(100);
+  const [showCopied, setShowCopied] = useState(false);
   const [showOpenCasesAssistant, setShowOpenCasesAssistant] = useState(true);
 
-  // Filter results to only include products with at least one attribute below 90%
   const filteredResults = useMemo(() => {
-    return results
-      .filter(result => {
-        // First apply marketplace filter if selected
-        if (selectedMarketplace && result.Marketplace !== selectedMarketplace) {
-          return false;
-        }
-        // Then apply similarity threshold filter
-        return Object.entries(result.fields)
-          .some(([field, data]) => selectedFields[field] && data.similarity < 90);
-      });
-  }, [results, selectedFields, selectedMarketplace]);
+    return selectedMarketplace
+      ? results.filter((r) => r.Marketplace === selectedMarketplace)
+      : results;
+  }, [results, selectedMarketplace]);
 
-  const batches = useMemo(() => {
-    const batchFiles: BatchFile[] = [];
-    
-    // Group results by marketplace first
-    const marketplaceGroups = filteredResults.reduce((groups, result) => {
-      const marketplace = result.Marketplace;
-      if (!groups[marketplace]) {
-        groups[marketplace] = [];
-      }
-      groups[marketplace].push(result);
-      return groups;
-    }, {} as Record<string, ComparisonResult[]>);
+  const generateBatches = useCallback(() => {
+    const newBatches: BatchFile[] = [];
+    const marketplaces = Array.from(new Set(filteredResults.map(r => r.Marketplace)));
 
-    // Create batches for each marketplace group
-    Object.entries(marketplaceGroups).forEach(([marketplace, results]) => {
-      for (let i = 0; i < results.length; i += 10) {
-        batchFiles.push({
-          id: batchFiles.length + 1,
-          results: results.slice(i, i + 10),
-          marketplace: marketplace,
+    marketplaces.forEach(marketplace => {
+      const marketplaceResults = filteredResults.filter(r => r.Marketplace === marketplace);
+      
+      for (let i = 0; i < marketplaceResults.length; i += batchSize) {
+        newBatches.push({
+          id: newBatches.length + 1,
+          results: marketplaceResults.slice(i, i + batchSize),
+          marketplace,
           downloaded: false
         });
       }
     });
-    
-    return batchFiles;
-  }, [filteredResults]);
+
+    setBatches(newBatches);
+  }, [filteredResults, batchSize]);
 
   const generateExcel = async (batch: BatchFile) => {
-    const selectedFieldKeys = Object.keys(selectedFields).filter(key => selectedFields[key]);
-    
-    // Create workbook and worksheet
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Content Review');
+    const worksheet = workbook.addWorksheet('Open Cases');
 
     // Add headers
     worksheet.columns = [
-      { header: 'ASIN', width: 15 },
-      { header: 'Marketplace', width: 15 },
-      ...selectedFieldKeys.map(key => ({ header: key, width: 30 }))
+      { header: 'ASIN', key: 'asin', width: 15 },
+      { header: 'Marketplace', key: 'marketplace', width: 15 },
+      { header: 'Overall Match', key: 'overallMatch', width: 15 },
+      ...Object.entries(selectedFields)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([field]) => ({ header: field, key: field.toLowerCase(), width: 50 }))
     ];
 
-    // Define style for cells with low similarity
-    const yellowFill = {
-      type: 'pattern' as const,
-      pattern: 'solid' as const,
-      fgColor: { argb: 'FFFFFF00' }
+    // Style headers
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE5E7EB' }
     };
 
-    // Add data rows
+    // Add data
     batch.results.forEach(result => {
-      // Create row with data
-      const rowData = [
-        result.ASIN,
-        result.Marketplace,
-        ...selectedFieldKeys.map(field => result.fields[field]?.source2 || '')
-      ];
+      const row: any = {
+        asin: result.ASIN,
+        marketplace: result.Marketplace,
+        overallMatch: `${result.overallMatch.toFixed(2)}%`
+      };
 
-      // Add row to worksheet
-      const row = worksheet.addRow(rowData);
+      Object.entries(selectedFields)
+        .filter(([_, isSelected]) => isSelected)
+        .forEach(([field]) => {
+          const fieldData = result.fields[field];
+          if (fieldData) {
+            row[field.toLowerCase()] = `Current: ${fieldData.source1}\n\nNew: ${fieldData.source2}\n\nMatch: ${fieldData.similarity.toFixed(2)}%`;
+          }
+        });
 
-      // Check for fields with similarity < 90% and highlight only those cells
-      selectedFieldKeys.forEach((field, index) => {
-        const similarity = result.fields[field]?.similarity || 0;
-        if (similarity < 90) {
-          const colIndex = index + 3; // +3 for ASIN and Marketplace
-          const cell = row.getCell(colIndex);
-          cell.fill = yellowFill;
-          cell.font = { bold: true };
+      worksheet.addRow(row);
+    });
+
+    // Auto-fit rows
+    worksheet.eachRow((row) => {
+      row.eachCell((cell: Cell) => {
+        if (typeof cell.value === 'string') {
+          const lines = cell.value.split('\n').length;
+          row.height = Math.max(lines * 15, 20);
         }
       });
     });
 
-    // Style the header row
-    worksheet.getRow(1).font = { bold: true };
-    worksheet.getRow(1).fill = {
-      type: 'pattern' as const,
-      pattern: 'solid' as const,
-      fgColor: { argb: 'FFE0E0E0' }
-    };
-
     // Generate buffer
     const buffer = await workbook.xlsx.writeBuffer();
-    
-    // Create blob and download
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `open_cases_batch_${batch.id}_${batch.marketplace}.xlsx`;
+    link.download = `open-cases-batch-${batch.id}-${batch.marketplace}.xlsx`;
     link.click();
-    window.URL.revokeObjectURL(url);
-    
-    setDownloadedFiles(prev => new Set([...prev, batch.id]));
+    URL.revokeObjectURL(url);
+
+    // Mark batch as downloaded
+    setBatches(prev => prev.map(b => 
+      b.id === batch.id ? { ...b, downloaded: true } : b
+    ));
   };
 
-  const generateSupportMessage = (batch: BatchFile) => {
-    // Create ASIN-specific content sections
-    const asinSections = batch.results.map(result => {
-      // Get fields that need updating (similarity < 90%)
-      const fieldsToUpdate = Object.entries(result.fields)
-        .filter(([field, data]) => selectedFields[field] && data.similarity < 90)
-        .map(([field]) => `- ${field}`)
-        .join('\n');
-
-      return `[${result.ASIN}]:\n${fieldsToUpdate}`;
-    }).join('\n\n');
-
-    const message = `Hi team,
-
-I am writing regarding content updates needed for the following ASINs in the marketplace ${batch.marketplace}:
-
-${asinSections}
-
-As brand owners, we would like to request your assistance to get the right content live. Please see the attached Excel file where the yellow cells indicate the content that needs to be updated.
-
-Thanks!`;
-
-    return message;
-  };
-
-  const copyToClipboard = async (batch: BatchFile) => {
-    const message = generateSupportMessage(batch);
-    await navigator.clipboard.writeText(message);
-    setCopiedMessages(prev => new Set([...prev, batch.id]));
+  const copyBatchInfo = () => {
+    const info = batches.map(batch => 
+      `Batch ${batch.id} - ${batch.marketplace}: ${batch.results.length} products`
+    ).join('\n');
     
-    // Reset the copied state after 2 seconds
-    setTimeout(() => {
-      setCopiedMessages(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(batch.id);
-        return newSet;
-      });
-    }, 2000);
+    navigator.clipboard.writeText(info);
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
   };
 
   if (filteredResults.length === 0) {
@@ -189,102 +144,105 @@ Thanks!`;
   }
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-lg">
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Open Cases Assistant</h2>
-        <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 mb-8">
-          <div className="flex items-start">
-            <div className="flex-shrink-0">
-              <AlertCircle className="h-5 w-5 text-brand-600" />
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <div className="space-y-6">
+        <div className="flex flex-col space-y-4">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Open Cases Assistant</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Generate Excel files for creating open cases in bulk. Files will be split by marketplace and batch size to manage large volumes efficiently.
+          </p>
+          <div className="flex items-center space-x-4">
+            <div className="w-48">
+              <label htmlFor="batchSize" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Products per batch
+              </label>
+              <select
+                id="batchSize"
+                value={batchSize}
+                onChange={(e) => setBatchSize(Number(e.target.value))}
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md dark:bg-gray-700 dark:text-gray-100"
+              >
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="500">500</option>
+              </select>
             </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-brand-800">Processing Information</h3>
-              <div className="mt-2 text-sm text-brand-700">
-                <p>Found {filteredResults.length} products with content matching below 90%</p>
-                <p className="mt-1">
-                  {batches.length} batch{batches.length !== 1 ? 'es' : ''} will be generated
-                  {filteredResults.length % 10 !== 0 && ` (last batch will contain ${filteredResults.length % 10} ASINs)`}
-                </p>
-              </div>
-            </div>
+            <button
+              onClick={generateBatches}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 dark:focus:ring-offset-gray-800"
+            >
+              Generate Batches
+            </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {batches.map((batch) => (
-            <div
-              key={batch.id}
-              className="border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Batch #{batch.id} - {batch.marketplace}
-                </h3>
-                <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                  {batch.results.length} ASINs
-                </span>
-              </div>
-              <div className="space-y-2 mb-6">
-                {batch.results.map((result) => (
-                  <div key={result.ASIN} className="flex justify-between items-center text-sm">
-                    <span className="font-mono text-gray-600">{result.ASIN}</span>
-                    <span className="text-gray-500">{result.Marketplace}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => generateExcel(batch)}
-                  className={`flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md ${
-                    downloadedFiles.has(batch.id)
-                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                      : 'bg-brand-400 text-white hover:bg-brand-500'
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 transition-colors`}
-                >
-                  {downloadedFiles.has(batch.id) ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Downloaded
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Excel
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => copyToClipboard(batch)}
-                  className={`flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md ${
-                    copiedMessages.has(batch.id)
-                      ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                      : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors`}
-                >
-                  {copiedMessages.has(batch.id) ? (
-                    <>
-                      <CheckCheck className="w-4 h-4 mr-2" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy Support Message
-                    </>
-                  )}
-                </button>
-              </div>
+
+        {batches.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Generated Batches</h3>
+              <button
+                onClick={copyBatchInfo}
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 dark:focus:ring-offset-gray-800"
+              >
+                {showCopied ? (
+                  <>
+                    <CheckCheck className="w-4 h-4 mr-1.5 text-green-500" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-1.5" />
+                    Copy Info
+                  </>
+                )}
+              </button>
             </div>
-          ))}
-        </div>
-        <div className="mt-8">
-          <button
-            onClick={() => setShowOpenCasesAssistant(!showOpenCasesAssistant)}
-            className="inline-flex items-center px-6 py-3 border border-transparent text-lg font-medium rounded-md text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 shadow-lg transform transition-all duration-200 hover:scale-105"
-          >
-            <FileOutput className="w-6 h-6 mr-2" />
-            {showOpenCasesAssistant ? 'Close Cases Assistant' : 'Open Cases Assistant'}
-          </button>
-        </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {batches.map((batch) => (
+                <div
+                  key={batch.id}
+                  className="relative rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 p-4 shadow-sm"
+                >
+                  <div className="flex justify-between">
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Batch {batch.id}
+                      </h4>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {batch.marketplace} • {batch.results.length} products
+                      </p>
+                    </div>
+                    {batch.downloaded && (
+                      <div className="absolute top-4 right-4">
+                        <Check className="w-5 h-5 text-green-500" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      onClick={() => generateExcel(batch)}
+                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 dark:focus:ring-offset-gray-800 w-full justify-center"
+                    >
+                      <Download className="w-4 h-4 mr-1.5" />
+                      {batch.downloaded ? 'Download Again' : 'Download Excel'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {batches.length === 0 && (
+          <div className="text-center py-12">
+            <AlertCircle className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No batches generated</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Click the "Generate Batches" button to create Excel files for open cases.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

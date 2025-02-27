@@ -49,41 +49,34 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded, label }) =
   };
 
   return (
-    <div className="w-full">
-      <label 
-        className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 ${
-          isUploaded 
-            ? 'border-green-300 bg-green-50 hover:bg-green-100' 
-            : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
-        }`}
+    <div className="mb-4">
+      <label
+        className={`
+          flex flex-col items-center w-full p-6 rounded-lg border-2 border-dashed
+          ${isUploaded 
+            ? 'border-green-600 bg-green-50 dark:border-green-600 dark:bg-green-900/30' 
+            : 'border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800'
+          }
+          cursor-pointer transition-all duration-200 hover:border-brand-400 dark:hover:border-brand-400
+        `}
       >
-        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+        <div className="flex flex-col items-center">
           {isUploaded ? (
-            <CheckCircle className="w-8 h-8 mb-2 text-green-500" />
-          ) : (
-            <Upload className="w-8 h-8 mb-2 text-gray-500" />
-          )}
-          <p className="mb-2 text-sm text-gray-500">
-            <span className="font-semibold">{getLabel()}</span>
-          </p>
-          {!isUploaded && (
             <>
-              <p className="text-xs text-gray-500 mb-1">
-                Drop your CSV file here or click to browse
-              </p>
-              <p className="text-xs text-gray-400 text-center max-w-[80%]">
-                {getFormatExplanation()}
-              </p>
+              <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400 mb-2" />
+              <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                {fileName} uploaded successfully
+              </span>
             </>
-          )}
-          {isUploaded && (
+          ) : (
             <>
-              <p className="text-xs text-green-500">
-                File uploaded successfully
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {fileName}
-              </p>
+              <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mb-2" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {getLabel()}
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {getFormatExplanation()}
+              </span>
             </>
           )}
         </div>
