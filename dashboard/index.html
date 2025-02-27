@@ -490,8 +490,17 @@
                 return;
             }
             
-            // Update user info
-            document.getElementById('userName').textContent = payload.given_name;
+            // Function to properly decode UTF-8 names
+            function decodeUTF8Name(name) {
+                try {
+                    return decodeURIComponent(name);
+                } catch {
+                    return name;
+                }
+            }
+            
+            // Update user info with proper UTF-8 decoding
+            document.getElementById('userName').textContent = decodeUTF8Name(payload.given_name);
             document.getElementById('userEmail').textContent = payload.email;
             document.getElementById('userAvatar').src = payload.picture;
         }
