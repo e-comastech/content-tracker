@@ -242,14 +242,16 @@
     <header class="header">
         <div class="header-content">
             <div class="logo-container">
-                <img src="/ecomas-logo.png" alt="e-Comas Logo" class="logo">
-                <div class="user-info">
-                    <div class="user-name" id="userName">Loading...</div>
-                    <div class="user-email" id="userEmail"></div>
+                <img src="/logo.png" alt="e-Comas Logo" class="logo">
+                <div class="flex items-center gap-4">
+                    <div>
+                        <div class="user-name" id="userName">Loading...</div>
+                        <div class="user-email" id="userEmail"></div>
+                    </div>
+                    <img id="userAvatar" class="avatar" src="" alt="User avatar">
                 </div>
             </div>
             <div class="user-profile">
-                <img id="userAvatar" class="avatar" src="" alt="User avatar">
                 <button class="logout-button" onclick="logout()">Logout</button>
             </div>
         </div>
