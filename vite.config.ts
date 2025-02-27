@@ -14,18 +14,24 @@ export default defineConfig({
     rollupOptions: {
       input: {
         landing: resolve(__dirname, 'landing/index.html'),
+        dashboard: resolve(__dirname, 'dashboard/index.html'),
         app: resolve(__dirname, 'cct/index.html'),
       },
       output: {
         dir: 'dist',
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'app' ? 'cct/[name]-[hash].js' : '[name]-[hash].js';
+          if (chunkInfo.name === 'app') return 'cct/[name]-[hash].js';
+          if (chunkInfo.name === 'dashboard') return 'dashboard/[name]-[hash].js';
+          return '[name]-[hash].js';
         },
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name.split('/');
           const type = info[0];
           if (type === 'cct') {
             return 'cct/assets/[name]-[hash][extname]';
+          }
+          if (type === 'dashboard') {
+            return 'dashboard/assets/[name]-[hash][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         }
