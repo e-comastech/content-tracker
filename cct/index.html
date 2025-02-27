@@ -8,7 +8,7 @@
     <script>
       // Initialize theme before the app loads to prevent flash
       (function() {
-        const theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+        const theme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
         document.documentElement.classList.add(theme);
         document.documentElement.setAttribute('data-theme', theme);
       })();

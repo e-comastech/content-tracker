@@ -39,8 +39,8 @@ function AppContent() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     // Get theme from localStorage with validation
     const savedTheme = localStorage.getItem('theme');
-    // Only accept valid themes, default to light
-    const validTheme = savedTheme === 'dark' ? 'dark' : 'light';
+    // Default to dark theme if no theme is set
+    const validTheme = savedTheme === 'light' ? 'light' : 'dark';
     // Ensure DOM and localStorage are in sync
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(validTheme);
@@ -265,7 +265,7 @@ function AppContent() {
                 <div className="flex items-center gap-4">
                   <div>
                     <p className="text-brand-600 dark:text-brand-400 font-medium">
-                      Welcome, {user.firstName}!
+                      {user.firstName}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {user.email}
