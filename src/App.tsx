@@ -190,6 +190,74 @@ function AppContent() {
   // Main app content when authenticated
   return (
     <div className="min-h-screen bg-brand-50 flex flex-col">
+      <header className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/ecomas-logo.png" 
+                alt="e-Comas Logo" 
+                className="h-12 w-auto"
+              />
+              {user && (
+                <div>
+                  <p className="text-brand-600 font-medium">
+                    Welcome, {user.firstName}!
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {user.email}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-4">
+              {user?.picture && (
+                <img
+                  src={user.picture}
+                  alt="Profile"
+                  className="h-8 w-8 rounded-full"
+                />
+              )}
+              <button
+                onClick={() => {
+                  setUser(null);
+                  setIsAuthenticated(false);
+                  localStorage.removeItem('googleCredential');
+                  window.location.href = '/dashboard/';
+                }}
+                className="inline-flex items-center px-4 py-2 border border-brand-300 text-sm font-medium rounded-md text-brand-700 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+              >
+                Back to Dashboard
+              </button>
+              <a
+                href="https://doc.clickup.com/14349561/d/h/dnx7t-29272/c1fb97f7b77dbcf"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open help guide in new tab"
+                className="inline-flex items-center px-4 py-2 border border-brand-300 text-sm font-medium rounded-md text-brand-700 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+              >
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Help Guide
+              </a>
+              {marketplaces.length > 0 && (
+                <select
+                  value={selectedMarketplace}
+                  onChange={(e) => setSelectedMarketplace(e.target.value)}
+                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md"
+                >
+                  <option value="">All Marketplaces</option>
+                  {marketplaces.map((marketplace) => (
+                    <option key={marketplace} value={marketplace}>
+                      {marketplace}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
       <div className="flex-grow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
