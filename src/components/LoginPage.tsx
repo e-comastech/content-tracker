@@ -65,12 +65,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                   picture: decoded.picture,
                   lastLogin: new Date()
                 });
+                localStorage.setItem('googleCredential', credentialResponse.credential);
                 onLogin();
               }
             }}
             onError={() => {
               console.error('Login Failed');
             }}
+            useOneTap
+            type="standard"
+            theme="outline"
+            size="large"
+            text="signin_with"
+            shape="rectangular"
+            logo_alignment="left"
           />
         </div>
       </div>
