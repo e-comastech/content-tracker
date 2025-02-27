@@ -40,7 +40,13 @@ function AppContent() {
     // Get theme from localStorage with validation
     const savedTheme = localStorage.getItem('theme');
     // Only accept valid themes, default to light
-    return savedTheme === 'dark' ? 'dark' : 'light';
+    const validTheme = savedTheme === 'dark' ? 'dark' : 'light';
+    // Ensure DOM and localStorage are in sync
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(validTheme);
+    document.documentElement.setAttribute('data-theme', validTheme);
+    localStorage.setItem('theme', validTheme);
+    return validTheme;
   });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const credential = localStorage.getItem('googleCredential');
@@ -94,32 +100,28 @@ function AppContent() {
     }
   }, [user, setUser]);
 
-  // Apply theme to document
+  // Apply theme to document with proper cleanup
   const applyTheme = useCallback((newTheme: 'light' | 'dark') => {
-    // Update DOM
+    // Remove both themes first to ensure clean state
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
-    
-    // Update localStorage
     localStorage.setItem('theme', newTheme);
-    
-    // Update state
     setTheme(newTheme);
+
+    // Dispatch a custom event for other components that might need to know about theme changes
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: newTheme } }));
   }, []);
 
-  // Theme toggle handler
+  // Theme toggle handler with proper state management
   const toggleTheme = useCallback(() => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     applyTheme(newTheme);
   }, [theme, applyTheme]);
 
-  // Initialize theme on mount
+  // Initialize theme and handle storage events
   useEffect(() => {
-    // Apply initial theme
-    applyTheme(theme);
-    
-    // Listen for theme changes from other tabs/windows
+    // Handle theme changes from other tabs/windows
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'theme') {
         const newTheme = e.newValue === 'dark' ? 'dark' : 'light';
@@ -128,13 +130,25 @@ function AppContent() {
         }
       }
     };
-    
+
+    // Handle theme changes from other parts of the app
+    const handleThemeChange = (e: CustomEvent) => {
+      const newTheme = e.detail.theme;
+      if (newTheme !== theme) {
+        applyTheme(newTheme);
+      }
+    };
+
+    // Add event listeners
     window.addEventListener('storage', handleStorageChange);
-    
+    window.addEventListener('themechange', handleThemeChange as EventListener);
+
+    // Cleanup
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('themechange', handleThemeChange as EventListener);
     };
-  }, [applyTheme, theme]);
+  }, [theme, applyTheme]);
 
   const downloadTemplate = () => {
     const headers = ['ASIN', 'Marketplace', 'ProductTitle', 'Description', 'BulletPoint1', 'BulletPoint2', 'BulletPoint3', 'BulletPoint4', 'BulletPoint5', 'Variations', 'Link'];
