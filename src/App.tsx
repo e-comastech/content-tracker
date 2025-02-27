@@ -7,7 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { OpenCasesAssistant } from './components/OpenCasesAssistant';
 import { ProductData, ComparisonResult, Statistics, FieldSelection } from './types/index';
 import { compareProducts } from './utils/comparison';
-import { FileCheck, Settings, AlertTriangle, X, Download, Info, HelpCircle, FileOutput } from 'lucide-react';
+import { FileCheck, Settings, AlertTriangle, X, Download, Info, HelpCircle, FileOutput, Moon, Sun } from 'lucide-react';
 import Papa from 'papaparse';
 import { UserProvider, useUser } from './contexts/UserContext';
 
@@ -36,6 +36,7 @@ const CHANGELOG = {
 };
 
 function AppContent() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const credential = localStorage.getItem('googleCredential');
     if (credential) {
@@ -87,6 +88,19 @@ function AppContent() {
       }
     }
   }, [user, setUser]);
+
+  // Theme management
+  const toggleTheme = useCallback(() => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  }, [theme]);
+
+  // Initialize theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   const downloadTemplate = () => {
     const headers = ['ASIN', 'Marketplace', 'ProductTitle', 'Description', 'BulletPoint1', 'BulletPoint2', 'BulletPoint3', 'BulletPoint4', 'BulletPoint5', 'Variations', 'Link'];
@@ -189,8 +203,8 @@ function AppContent() {
 
   // Main app content when authenticated
   return (
-    <div className="min-h-screen bg-brand-50 flex flex-col">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-brand-50 dark:bg-gray-900 flex flex-col">
+      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
@@ -202,10 +216,10 @@ function AppContent() {
               {user && (
                 <div className="flex items-center gap-4">
                   <div>
-                    <p className="text-brand-600 font-medium">
+                    <p className="text-brand-600 dark:text-brand-400 font-medium">
                       Welcome, {user.firstName}!
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {user.email}
                     </p>
                   </div>
@@ -221,10 +235,21 @@ function AppContent() {
             </div>
             <div className="flex items-center gap-4">
               <button
+                onClick={toggleTheme}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                aria-label="Toggle dark mode"
+              >
+                {theme === 'dark' ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
+              </button>
+              <button
                 onClick={() => {
                   window.location.href = '/dashboard/';
                 }}
-                className="inline-flex items-center px-4 py-2 border border-brand-300 text-sm font-medium rounded-md text-brand-700 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-md text-brand-700 dark:text-brand-400 bg-white dark:bg-gray-800 hover:bg-brand-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
               >
                 Back to Dashboard
               </button>
@@ -233,7 +258,7 @@ function AppContent() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open help guide in new tab"
-                className="inline-flex items-center px-4 py-2 border border-brand-300 text-sm font-medium rounded-md text-brand-700 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-md text-brand-700 dark:text-brand-400 bg-white dark:bg-gray-800 hover:bg-brand-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
               >
                 <HelpCircle className="w-4 h-4 mr-2" />
                 Help Guide
@@ -242,7 +267,7 @@ function AppContent() {
                 <select
                   value={selectedMarketplace}
                   onChange={(e) => setSelectedMarketplace(e.target.value)}
-                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md"
+                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md dark:bg-gray-800 dark:text-gray-300"
                 >
                   <option value="">All Marketplaces</option>
                   {marketplaces.map((marketplace) => (
@@ -257,7 +282,7 @@ function AppContent() {
         </div>
       </header>
 
-      <div className="flex-grow">
+      <div className="flex-grow dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -371,33 +396,33 @@ function AppContent() {
           )}
         </div>
       </div>
-      <footer className="bg-white border-t border-gray-200 py-6">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center space-y-2">
-            <p className="text-center text-gray-500">
+            <p className="text-center text-gray-500 dark:text-gray-400">
               Made with love ❤️ and lots of coffee ☕️ by{' '}
               <a 
                 href="https://www.linkedin.com/in/claudiu-clement/" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-brand-400 hover:text-brand-500"
+                className="text-brand-400 hover:text-brand-500 dark:text-brand-300 dark:hover:text-brand-200"
               >
                 Clau
               </a>
               . Copyright e-Comas SARL.
             </p>
             <div className="relative group">
-              <div className="flex items-center space-x-1 text-sm text-gray-400">
+              <div className="flex items-center space-x-1 text-sm text-gray-400 dark:text-gray-500">
                 <span>v{CHANGELOG.version}</span>
                 <Info className="w-4 h-4 cursor-help" />
-                <span className="text-gray-300">•</span>
+                <span className="text-gray-300 dark:text-gray-600">•</span>
                 <span>Last updated: {CHANGELOG.date}</span>
               </div>
-              <div className="absolute bottom-full mb-2 p-3 bg-gray-800 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64">
+              <div className="absolute bottom-full mb-2 p-3 bg-gray-800 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64">
                 <p className="font-medium mb-2">What's new in v{CHANGELOG.version}:</p>
                 <ul className="list-disc list-inside space-y-1">
                   {CHANGELOG.changes.map((change, index) => (
-                    <li key={index} className="text-gray-300">{change}</li>
+                    <li key={index} className="text-gray-300 dark:text-gray-400">{change}</li>
                   ))}
                 </ul>
               </div>
