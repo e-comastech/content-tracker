@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { LoginPage } from './components/LoginPage';
 import { FileUpload } from './components/FileUpload';
@@ -36,7 +36,19 @@ const CHANGELOG = {
 };
 
 function AppContent() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const credential = localStorage.getItem('googleCredential');
+    if (credential) {
+      const payload = JSON.parse(atob(credential.split('.')[1]));
+      // Check if the token is not expired
+      if (payload.exp * 1000 > Date.now()) {
+        return true;
+      }
+      // If token is expired, remove it
+      localStorage.removeItem('googleCredential');
+    }
+    return false;
+  });
   const { user, setUser } = useUser();
   const [source1Data, setSource1Data] = useState<ProductData[]>([]);
   const [source2Data, setSource2Data] = useState<ProductData[]>([]);
@@ -59,6 +71,22 @@ function AppContent() {
     fieldStats: {},
     results: [],
   });
+
+  // Initialize user data from stored credential
+  useEffect(() => {
+    if (!user) {
+      const credential = localStorage.getItem('googleCredential');
+      if (credential) {
+        const payload = JSON.parse(atob(credential.split('.')[1]));
+        setUser({
+          firstName: payload.given_name,
+          email: payload.email,
+          picture: payload.picture,
+          lastLogin: new Date()
+        });
+      }
+    }
+  }, [user, setUser]);
 
   const downloadTemplate = () => {
     const headers = ['ASIN', 'Marketplace', 'ProductTitle', 'Description', 'BulletPoint1', 'BulletPoint2', 'BulletPoint3', 'BulletPoint4', 'BulletPoint5', 'Variations', 'Link'];

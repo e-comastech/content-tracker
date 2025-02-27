@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { useUser } from '../contexts/UserContext';
@@ -15,6 +15,27 @@ interface GoogleJwtPayload {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const { setUser } = useUser();
+
+  useEffect(() => {
+    // Check for existing credential
+    const credential = localStorage.getItem('googleCredential');
+    if (credential) {
+      const payload = JSON.parse(atob(credential.split('.')[1]));
+      // Check if the token is not expired
+      if (payload.exp * 1000 > Date.now()) {
+        setUser({
+          firstName: payload.given_name,
+          email: payload.email,
+          picture: payload.picture,
+          lastLogin: new Date()
+        });
+        onLogin();
+        return;
+      }
+      // If token is expired, remove it
+      localStorage.removeItem('googleCredential');
+    }
+  }, [setUser, onLogin]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
