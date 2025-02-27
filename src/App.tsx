@@ -200,24 +200,26 @@ function AppContent() {
                 className="h-12 w-auto"
               />
               {user && (
-                <div>
-                  <p className="text-brand-600 font-medium">
-                    Welcome, {user.firstName}!
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {user.email}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="text-brand-600 font-medium">
+                      Welcome, {user.firstName}!
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {user.email}
+                    </p>
+                  </div>
+                  {user?.picture && (
+                    <img
+                      src={user.picture}
+                      alt="Profile"
+                      className="h-8 w-8 rounded-full"
+                    />
+                  )}
                 </div>
               )}
             </div>
             <div className="flex items-center gap-4">
-              {user?.picture && (
-                <img
-                  src={user.picture}
-                  alt="Profile"
-                  className="h-8 w-8 rounded-full"
-                />
-              )}
               <button
                 onClick={() => {
                   window.location.href = '/dashboard/';
