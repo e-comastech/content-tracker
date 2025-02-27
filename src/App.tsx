@@ -95,15 +95,30 @@ function AppContent() {
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
   }, [theme]);
 
-  // Initialize theme
+  // Initialize theme and listen for changes
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    // Function to handle theme changes from storage
+    const handleThemeChange = () => {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    };
+
+    // Initial theme setup
+    handleThemeChange();
+
+    // Listen for theme changes in localStorage
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'theme') {
+        handleThemeChange();
+      }
+    });
+
+    return () => {
+      window.removeEventListener('storage', handleThemeChange);
+    };
   }, []);
 
   const downloadTemplate = () => {
