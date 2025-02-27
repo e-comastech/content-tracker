@@ -95,35 +95,55 @@ function AppContent() {
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
-    // Dispatch a custom event to ensure theme change is detected
-    window.dispatchEvent(new Event('themeChange'));
+    // Force update all themed elements
+    document.documentElement.classList.remove('dark', 'light');
+    document.documentElement.classList.add(newTheme);
   }, [theme]);
 
   // Initialize theme and listen for changes
   useEffect(() => {
     // Function to handle theme changes
-    const handleThemeChange = (e?: StorageEvent) => {
-      // If this is a storage event, only handle if it's for the theme key
-      if (e && e.key !== 'theme') return;
+    const handleThemeChange = () => {
+      // Get theme with fallback and validation
+      const savedTheme = localStorage.getItem('theme');
+      const validTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
       
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
+      // Ensure localStorage has the correct value
+      if (validTheme !== savedTheme) {
+        localStorage.setItem('theme', validTheme);
+      }
+
+      // Update state and DOM
+      setTheme(validTheme);
+      document.documentElement.setAttribute('data-theme', validTheme);
+      document.documentElement.classList.remove('dark', 'light');
+      document.documentElement.classList.add(validTheme);
     };
 
     // Initial theme setup
     handleThemeChange();
 
-    // Listen for theme changes in localStorage from other windows/tabs
-    window.addEventListener('storage', handleThemeChange);
-    // Listen for local theme changes
-    window.addEventListener('themeChange', () => handleThemeChange());
+    // Listen for theme changes in localStorage
+    const storageListener = (e: StorageEvent) => {
+      if (e.key === 'theme') {
+        handleThemeChange();
+      }
+    };
+
+    window.addEventListener('storage', storageListener);
 
     return () => {
-      window.removeEventListener('storage', handleThemeChange);
-      window.removeEventListener('themeChange', () => handleThemeChange());
+      window.removeEventListener('storage', storageListener);
     };
   }, []);
+
+  // Ensure theme is synced when component mounts
+  useEffect(() => {
+    const currentTheme = theme;
+    document.documentElement.classList.remove('dark', 'light');
+    document.documentElement.classList.add(currentTheme);
+    document.documentElement.setAttribute('data-theme', currentTheme);
+  }, [theme]);
 
   const downloadTemplate = () => {
     const headers = ['ASIN', 'Marketplace', 'ProductTitle', 'Description', 'BulletPoint1', 'BulletPoint2', 'BulletPoint3', 'BulletPoint4', 'BulletPoint5', 'Variations', 'Link'];
