@@ -95,12 +95,17 @@ function AppContent() {
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
+    // Dispatch a custom event to ensure theme change is detected
+    window.dispatchEvent(new Event('themeChange'));
   }, [theme]);
 
   // Initialize theme and listen for changes
   useEffect(() => {
-    // Function to handle theme changes from storage
-    const handleThemeChange = () => {
+    // Function to handle theme changes
+    const handleThemeChange = (e?: StorageEvent) => {
+      // If this is a storage event, only handle if it's for the theme key
+      if (e && e.key !== 'theme') return;
+      
       const savedTheme = localStorage.getItem('theme') || 'light';
       setTheme(savedTheme);
       document.documentElement.setAttribute('data-theme', savedTheme);
@@ -109,15 +114,14 @@ function AppContent() {
     // Initial theme setup
     handleThemeChange();
 
-    // Listen for theme changes in localStorage
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'theme') {
-        handleThemeChange();
-      }
-    });
+    // Listen for theme changes in localStorage from other windows/tabs
+    window.addEventListener('storage', handleThemeChange);
+    // Listen for local theme changes
+    window.addEventListener('themeChange', () => handleThemeChange());
 
     return () => {
       window.removeEventListener('storage', handleThemeChange);
+      window.removeEventListener('themeChange', () => handleThemeChange());
     };
   }, []);
 
