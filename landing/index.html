@@ -211,6 +211,12 @@
             border-radius: 9999px;
             font-size: 0.875rem;
             color: var(--text-secondary);
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            box-shadow: 0 2px 4px var(--shadow-color);
         }
 
         .status-dot {
@@ -305,26 +311,41 @@
                 transform: translateY(0);
             }
         }
+
+        .footer-copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .footer-copyright a {
+            color: var(--brand-400);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-copyright a:hover {
+            color: var(--brand-600);
+        }
     </style>
 </head>
 <body>
-    <header>
-        <img src="/ecomas-logo.png" alt="e-Comas Logo" class="header-logo">
-        <div class="header-actions">
-            <div class="system-status">
-                <span class="status-dot"></span>
-                All systems operational
-            </div>
-            <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
-                <svg id="moonIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </svg>
-                <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-            </button>
-        </div>
-    </header>
+    <div class="system-status">
+        <span class="status-dot"></span>
+        All systems operational
+    </div>
+
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+        <svg id="moonIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+        <svg id="sunIcon" class="hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+    </button>
 
     <main class="hero">
         <img src="/ecomas-logo.png" alt="e-Comas Logo" class="logo">
@@ -414,8 +435,8 @@
                 </ul>
             </div>
         </div>
-        <div class="text-center mt-8">
-            <p>Made with love ❤️ and lots of coffee ☕️ by <a href="https://www.linkedin.com/in/claudiu-clement/" target="_blank" rel="noopener noreferrer">Clau</a>. Copyright e-Comas SARL.</p>
+        <div class="footer-copyright">
+            Made with love ❤️ and lots of coffee ☕️ by <a href="https://www.linkedin.com/in/claudiu-clement/" target="_blank" rel="noopener noreferrer">Clau</a>. Copyright e-Comas SARL.
         </div>
     </footer>
 
