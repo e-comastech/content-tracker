@@ -25,6 +25,7 @@ export default defineConfig({
           return '[name]-[hash].js';
         },
         assetFileNames: (assetInfo) => {
+          if (!assetInfo.name) return 'assets/[name]-[hash][extname]';
           const info = assetInfo.name.split('/');
           const type = info[0];
           if (type === 'cct') {
