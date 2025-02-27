@@ -99,8 +99,10 @@ function AppContent() {
 
   // Initialize theme
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }, []);
 
   const downloadTemplate = () => {
     const headers = ['ASIN', 'Marketplace', 'ProductTitle', 'Description', 'BulletPoint1', 'BulletPoint2', 'BulletPoint3', 'BulletPoint4', 'BulletPoint5', 'Variations', 'Link'];
@@ -203,13 +205,13 @@ function AppContent() {
 
   // Main app content when authenticated
   return (
-    <div className="min-h-screen bg-brand-50 dark:bg-gray-900 flex flex-col">
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div className="min-h-screen bg-brand-50 dark:bg-[#1a1a1a] flex flex-col">
+      <header className="bg-white dark:bg-[#2d2d2d] border-b border-gray-200 dark:border-[#404040]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
               <img 
-                src="/logo.png" 
+                src="/ecomas-logo.png" 
                 alt="e-Comas Logo" 
                 className="h-12 w-auto"
               />
@@ -236,7 +238,7 @@ function AppContent() {
             <div className="flex items-center gap-4">
               <button
                 onClick={toggleTheme}
-                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-[#404040] text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-[#2d2d2d] hover:bg-gray-50 dark:hover:bg-[#3d3d3d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
                 aria-label="Toggle dark mode"
               >
                 {theme === 'dark' ? (
@@ -249,7 +251,7 @@ function AppContent() {
                 onClick={() => {
                   window.location.href = '/dashboard/';
                 }}
-                className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-md text-brand-700 dark:text-brand-400 bg-white dark:bg-gray-800 hover:bg-brand-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-[#404040] text-sm font-medium rounded-md text-brand-700 dark:text-brand-400 bg-white dark:bg-[#2d2d2d] hover:bg-brand-50 dark:hover:bg-[#3d3d3d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
               >
                 Back to Dashboard
               </button>
@@ -258,7 +260,7 @@ function AppContent() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open help guide in new tab"
-                className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-brand-600 text-sm font-medium rounded-md text-brand-700 dark:text-brand-400 bg-white dark:bg-gray-800 hover:bg-brand-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                className="inline-flex items-center px-4 py-2 border border-brand-300 dark:border-[#404040] text-sm font-medium rounded-md text-brand-700 dark:text-brand-400 bg-white dark:bg-[#2d2d2d] hover:bg-brand-50 dark:hover:bg-[#3d3d3d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
               >
                 <HelpCircle className="w-4 h-4 mr-2" />
                 Help Guide
@@ -267,7 +269,7 @@ function AppContent() {
                 <select
                   value={selectedMarketplace}
                   onChange={(e) => setSelectedMarketplace(e.target.value)}
-                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md dark:bg-gray-800 dark:text-gray-300"
+                  className="block w-64 pl-3 pr-10 py-2 text-base border-gray-300 dark:border-[#404040] focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md dark:bg-[#2d2d2d] dark:text-gray-300"
                 >
                   <option value="">All Marketplaces</option>
                   {marketplaces.map((marketplace) => (
@@ -282,7 +284,7 @@ function AppContent() {
         </div>
       </header>
 
-      <div className="flex-grow dark:bg-gray-900">
+      <div className="flex-grow dark:bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -396,7 +398,7 @@ function AppContent() {
           )}
         </div>
       </div>
-      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-6">
+      <footer className="bg-white dark:bg-[#2d2d2d] border-t border-gray-200 dark:border-[#404040] py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center space-y-2">
             <p className="text-center text-gray-500 dark:text-gray-400">
