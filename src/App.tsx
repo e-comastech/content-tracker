@@ -36,7 +36,12 @@ const CHANGELOG = {
 };
 
 function AppContent() {
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    // Get theme from localStorage with validation
+    const savedTheme = localStorage.getItem('theme');
+    // Only accept valid themes, default to light
+    return savedTheme === 'dark' ? 'dark' : 'light';
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     const credential = localStorage.getItem('googleCredential');
     if (credential) {
@@ -89,61 +94,47 @@ function AppContent() {
     }
   }, [user, setUser]);
 
-  // Theme management
-  const toggleTheme = useCallback(() => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    // Force update all themed elements
-    document.documentElement.classList.remove('dark', 'light');
+  // Apply theme to document
+  const applyTheme = useCallback((newTheme: 'light' | 'dark') => {
+    // Update DOM
+    document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(newTheme);
-  }, [theme]);
-
-  // Initialize theme and listen for changes
-  useEffect(() => {
-    // Function to handle theme changes
-    const handleThemeChange = () => {
-      // Get theme with fallback and validation
-      const savedTheme = localStorage.getItem('theme');
-      const validTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
-      
-      // Ensure localStorage has the correct value
-      if (validTheme !== savedTheme) {
-        localStorage.setItem('theme', validTheme);
-      }
-
-      // Update state and DOM
-      setTheme(validTheme);
-      document.documentElement.setAttribute('data-theme', validTheme);
-      document.documentElement.classList.remove('dark', 'light');
-      document.documentElement.classList.add(validTheme);
-    };
-
-    // Initial theme setup
-    handleThemeChange();
-
-    // Listen for theme changes in localStorage
-    const storageListener = (e: StorageEvent) => {
-      if (e.key === 'theme') {
-        handleThemeChange();
-      }
-    };
-
-    window.addEventListener('storage', storageListener);
-
-    return () => {
-      window.removeEventListener('storage', storageListener);
-    };
+    document.documentElement.setAttribute('data-theme', newTheme);
+    
+    // Update localStorage
+    localStorage.setItem('theme', newTheme);
+    
+    // Update state
+    setTheme(newTheme);
   }, []);
 
-  // Ensure theme is synced when component mounts
+  // Theme toggle handler
+  const toggleTheme = useCallback(() => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    applyTheme(newTheme);
+  }, [theme, applyTheme]);
+
+  // Initialize theme on mount
   useEffect(() => {
-    const currentTheme = theme;
-    document.documentElement.classList.remove('dark', 'light');
-    document.documentElement.classList.add(currentTheme);
-    document.documentElement.setAttribute('data-theme', currentTheme);
-  }, [theme]);
+    // Apply initial theme
+    applyTheme(theme);
+    
+    // Listen for theme changes from other tabs/windows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'theme') {
+        const newTheme = e.newValue === 'dark' ? 'dark' : 'light';
+        if (newTheme !== theme) {
+          applyTheme(newTheme);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [applyTheme, theme]);
 
   const downloadTemplate = () => {
     const headers = ['ASIN', 'Marketplace', 'ProductTitle', 'Description', 'BulletPoint1', 'BulletPoint2', 'BulletPoint3', 'BulletPoint4', 'BulletPoint5', 'Variations', 'Link'];
