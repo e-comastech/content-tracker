@@ -220,9 +220,6 @@ function AppContent() {
               )}
               <button
                 onClick={() => {
-                  setUser(null);
-                  setIsAuthenticated(false);
-                  localStorage.removeItem('googleCredential');
                   window.location.href = '/dashboard/';
                 }}
                 className="inline-flex items-center px-4 py-2 border border-brand-300 text-sm font-medium rounded-md text-brand-700 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
