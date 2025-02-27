@@ -493,9 +493,21 @@
             // Function to properly decode UTF-8 names
             function decodeUTF8Name(name) {
                 try {
-                    return decodeURIComponent(name);
+                    // First try to decode as URI component
+                    const decoded = decodeURIComponent(name);
+                    // Then handle potential double-encoding by decoding again
+                    try {
+                        return decodeURIComponent(escape(decoded));
+                    } catch {
+                        return decoded;
+                    }
                 } catch {
-                    return name;
+                    // If first decoding fails, try to handle as double-encoded directly
+                    try {
+                        return decodeURIComponent(escape(name));
+                    } catch {
+                        return name;
+                    }
                 }
             }
             
