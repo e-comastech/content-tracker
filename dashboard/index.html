@@ -10,11 +10,12 @@
         :root {
             --brand-blue: #2563eb;
             --brand-blue-dark: #1d4ed8;
-            --brand-50: #f8fafc;
+            --brand-50: #F0FAF7;
+            --brand-300: #75DBC2;
             --brand-400: #64D7BE;
-            --brand-500: #1d4ed8;
+            --brand-500: #4CB89F;
             --brand-600: #3A9A85;
-            --brand-700: #1e3a8a;
+            --brand-700: #2B7C6B;
             --text-primary: #1e293b;
             --text-secondary: #64748b;
             
@@ -98,6 +99,10 @@
             color: var(--brand-600);
         }
 
+        [data-theme="dark"] .user-name {
+            color: var(--brand-400);
+        }
+
         .user-email {
             font-size: 0.875rem;
             color: var(--text-secondary);
@@ -113,7 +118,7 @@
         .logout-button {
             padding: 0.5rem 1rem;
             background: white;
-            border: 1px solid #e2e8f0;
+            border: 1px solid var(--brand-300);
             border-radius: 0.375rem;
             color: var(--brand-700);
             cursor: pointer;
@@ -122,9 +127,18 @@
             font-weight: 500;
         }
 
+        [data-theme="dark"] .logout-button {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+            color: var(--brand-400);
+        }
+
         .logout-button:hover {
             background: var(--brand-50);
-            border-color: var(--brand-400);
+        }
+
+        [data-theme="dark"] .logout-button:hover {
+            background: var(--bg-main);
         }
 
         main {
