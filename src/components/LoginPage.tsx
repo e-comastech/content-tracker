@@ -17,6 +17,16 @@ interface GoogleJwtPayload {
 export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const { setUser } = useUser();
 
+  const decodeUTF8Name = (name: string): string => {
+    try {
+      // First try to decode it as a URI component in case it's percent-encoded
+      return decodeURIComponent(name);
+    } catch {
+      // If that fails, return the original string
+      return name;
+    }
+  };
+
   useEffect(() => {
     // Check for existing credential
     const credential = localStorage.getItem('googleCredential');
@@ -26,7 +36,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         // Check if the token is not expired
         if (payload.exp * 1000 > Date.now()) {
           setUser({
-            firstName: decodeURIComponent(escape(payload.given_name)),
+            firstName: decodeUTF8Name(payload.given_name),
             email: payload.email,
             picture: payload.picture,
             lastLogin: new Date()
@@ -66,7 +76,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 try {
                   const decoded = jwtDecode<GoogleJwtPayload>(credentialResponse.credential);
                   setUser({
-                    firstName: decodeURIComponent(escape(decoded.given_name)),
+                    firstName: decodeUTF8Name(decoded.given_name),
                     email: decoded.email,
                     picture: decoded.picture,
                     lastLogin: new Date()
