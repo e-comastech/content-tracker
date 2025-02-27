@@ -168,7 +168,7 @@ function AppContent() {
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center space-x-4">
                 <img 
-                  src="/logo.png" 
+                  src="/cct-logo.png" 
                   alt="Content Comparison Tool" 
                   className="h-32 w-auto"
                   style={{ maxWidth: '600px' }}

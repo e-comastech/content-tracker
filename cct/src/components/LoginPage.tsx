@@ -21,7 +21,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
       <div className="w-full max-w-md space-y-8 bg-white dark:bg-[#2d2d2d] p-10 rounded-xl shadow-lg">
         <div>
           <img
-            src="/logo.png"
+            src="/cct-logo.png"
             alt="Content Comparison Tool"
             className="mx-auto h-24 w-auto"
           />
