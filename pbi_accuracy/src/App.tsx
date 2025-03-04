@@ -5,11 +5,8 @@ import { ComparisonView } from './views/ComparisonView';
 import { DrilldownView } from './views/DrilldownView';
 import { OrderData, AsinMetadata, PBIData } from './types/data';
 import { processFileData, processMetadataFile, processPBIData } from './utils/dataProcessing';
-import { useUser } from '../common/contexts/UserContext';
-import { LoginPage } from '../common/components/LoginPage';
-import { Header } from '../common/components/Header';
-import { Footer } from '../common/components/Footer';
-import { Loading } from '../common/components/Loading';
+import { useUser } from '../../src/contexts/UserContext';
+import { LoginPage } from '../../src/components/LoginPage';
 
 function App() {
   const { user } = useUser();
@@ -97,7 +94,21 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header />
+      <nav className="bg-white dark:bg-gray-800 shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <div className="flex-shrink-0 flex items-center">
+                <img
+                  className="h-8 w-auto"
+                  src="/cct-logo.png"
+                  alt="PBI Data Accuracy"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col items-center">
@@ -150,7 +161,13 @@ function App() {
           )}
         </div>
       </main>
-      <Footer />
+      <footer className="bg-white dark:bg-gray-800 shadow mt-auto">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500">
+            © {new Date().getFullYear()} E-Comas. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
