@@ -16,14 +16,12 @@ export default defineConfig({
         landing: resolve(__dirname, 'landing/index.html'),
         dashboard: resolve(__dirname, 'dashboard/index.html'),
         cct: resolve(__dirname, 'cct/index.html'),
-        pbi_accuracy: resolve(__dirname, 'pbi_accuracy/index.html'),
       },
       output: {
         dir: 'dist',
         entryFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'cct') return 'cct/[name]-[hash].js';
           if (chunkInfo.name === 'dashboard') return 'dashboard/[name]-[hash].js';
-          if (chunkInfo.name === 'pbi_accuracy') return 'pbi_accuracy/[name]-[hash].js';
           return '[name]-[hash].js';
         },
         assetFileNames: (assetInfo) => {
@@ -35,9 +33,6 @@ export default defineConfig({
           }
           if (type === 'dashboard') {
             return 'dashboard/assets/[name]-[hash][extname]';
-          }
-          if (type === 'pbi_accuracy') {
-            return 'pbi_accuracy/assets/[name]-[hash][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         }

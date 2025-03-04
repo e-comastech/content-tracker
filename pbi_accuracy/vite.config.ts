@@ -1,13 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/pbi_accuracy/',
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
   build: {
+    outDir: '../dist/pbi_accuracy',
+    emptyOutDir: true,
     // Optimize build settings to reduce memory usage
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
@@ -16,8 +20,14 @@ export default defineConfig({
           react: ['react', 'react-dom'],
           recharts: ['recharts'],
           lucide: ['lucide-react']
+        },
+        input: {
+          main: resolve(__dirname, 'index.html')
         }
       }
     }
+  },
+  server: {
+    port: 5174, // Different port from CCT app
   }
 });
