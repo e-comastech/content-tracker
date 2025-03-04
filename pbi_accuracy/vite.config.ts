@@ -20,14 +20,16 @@ export default defineConfig({
           react: ['react', 'react-dom'],
           recharts: ['recharts'],
           lucide: ['lucide-react']
-        },
-        input: {
-          main: resolve(__dirname, 'index.html')
         }
       }
     }
   },
   server: {
     port: 5174, // Different port from CCT app
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src')
+    }
   }
 });
