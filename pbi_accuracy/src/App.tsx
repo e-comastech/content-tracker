@@ -5,11 +5,11 @@ import { ComparisonView } from './views/ComparisonView';
 import { DrilldownView } from './views/DrilldownView';
 import { OrderData, AsinMetadata, PBIData } from './types/data';
 import { processFileData, processMetadataFile, processPBIData } from './utils/dataProcessing';
-import { useUser } from '../../src/contexts/UserContext';
-import { LoginPage } from '../../src/components/LoginPage';
-import { Header } from '../../src/components/Header';
-import { Footer } from '../../src/components/Footer';
-import { Loading } from '../../src/components/Loading';
+import { useUser } from './contexts/UserContext';
+import { LoginPage } from './components/LoginPage';
+import { Header } from './components/Header';
+import { Footer } from './components/Footer';
+import { Loading } from './components/Loading';
 
 function App() {
   const { user } = useUser();
