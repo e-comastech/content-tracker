@@ -12,11 +12,13 @@
   from = "/pbi_accuracy"
   to = "/pbi_accuracy/index.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/pbi_accuracy/*"
   to = "/pbi_accuracy/index.html"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/*"
