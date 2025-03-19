@@ -121,20 +121,38 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       // Convert the view/edit URL to an export URL
       const sourceUrl = new URL(client.sourceUrl);
       const urlParts = sourceUrl.pathname.split('/');
-      const sheetId = urlParts[urlParts.indexOf('d') + 1];
-      const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+      // Find the sheet ID - it's usually after /d/ in the URL
+      const sheetIdIndex = urlParts.indexOf('d') + 1;
+      const sheetId = sheetIdIndex < urlParts.length ? urlParts[sheetIdIndex] : '';
+      
+      if (!sheetId) {
+        throw new Error(`Invalid sheet URL format for ${client.name}. URL: ${client.sourceUrl}`);
+      }
+
+      console.log('Debug - Original URL:', client.sourceUrl);
+      console.log('Debug - Extracted sheet ID:', sheetId);
+      
+      // Construct export URL with both CSV format and gid parameters
+      const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=858873134`;
+      console.log('Debug - Export URL:', exportUrl);
 
       const response = await fetch(exportUrl);
       if (!response.ok) {
-        throw new Error(`Failed to fetch source data for ${client.name}`);
+        console.error('Debug - Response status:', response.status);
+        console.error('Debug - Response headers:', Object.fromEntries(response.headers.entries()));
+        throw new Error(`Failed to fetch source data for ${client.name} (Status: ${response.status})`);
       }
 
       const contentType = response.headers.get('content-type');
+      console.log('Debug - Content Type:', contentType);
+      
       if (contentType && contentType.includes('text/html')) {
         throw new Error(`Unable to access the source sheet for ${client.name}. Please make sure it's shared with "Anyone with the link can view" access.`);
       }
 
       const csvText = await response.text();
+      console.log('Debug - First 100 chars of response:', csvText.substring(0, 100));
+      
       if (csvText.toLowerCase().includes('<!doctype html>')) {
         throw new Error(`Received HTML instead of CSV for ${client.name}. Please check sheet sharing settings.`);
       }
