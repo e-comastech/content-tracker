@@ -338,8 +338,9 @@ function AppContent() {
       <div className="flex-grow dark:bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center space-x-4">
+            {/* Step 1: Select Client & Source of Truth */}
+            <div className="mb-8">
+              <div className="flex items-center space-x-4 mb-6">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
                   <span className="text-brand-600 dark:text-brand-400 font-semibold">1</span>
                 </div>
@@ -347,115 +348,123 @@ function AppContent() {
                   Select Client & Source of Truth
                 </h3>
               </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <FileUpload
-                onDataLoaded={setSource2Data}
-                label="Client Source Selection"
-                allowClientSource={true}
-                step={1}
-                isEnabled={true}
-              />
-              <FileUpload
-                onDataLoaded={setSource1Data}
-                label="Upload Amazon Current Content"
-                step={2}
-                isEnabled={isStep2Enabled}
-              />
-            </div>
-            <div className="mt-4 flex flex-col items-center space-y-4">
-              <button
-                onClick={() => setShowFieldSelector(!showFieldSelector)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
-              >
-                <Settings className="w-5 h-5 mr-2" />
-                Select Fields to Compare
-              </button>
-              
-              {showFieldSelector && (
-                <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Select Fields to Compare</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(AVAILABLE_FIELDS).map(([key, label]) => (
-                      <label key={key} className="flex items-center space-x-3">
-                        <input
-                          type="checkbox"
-                          checked={selectedFields[key]}
-                          onChange={(e) => setSelectedFields(prev => ({
-                            ...prev,
-                            [key]: e.target.checked
-                          }))}
-                          className="h-4 w-4 text-brand-400 focus:ring-brand-400 border-gray-300 rounded"
-                        />
-                        <span className="text-gray-700">{label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              <button
-                onClick={handleComparison}
-                disabled={!isStep3Enabled}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                <FileCheck className="w-5 h-5 mr-2" />
-                Compare Content
-              </button>
-
-              {showWarning && (
-                <div className="w-full max-w-2xl bg-amber-50 border border-amber-200 rounded-lg p-4 relative">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <AlertTriangle className="h-5 w-5 text-amber-400" aria-hidden="true" />
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-amber-800">Data Accuracy Warning</h3>
-                      <div className="mt-2 text-sm text-amber-700">
-                        <p>
-                          Please ensure your CSV files contain accurate and up-to-date data before comparing. 
-                          The quality of the comparison results depends on the accuracy of your input files.
-                        </p>
-                        <button
-                          onClick={downloadTemplate}
-                          className="mt-2 inline-flex items-center text-amber-800 hover:text-amber-900"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Download CSV template
-                        </button>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowWarning(false)}
-                      className="absolute top-4 right-4 text-amber-400 hover:text-amber-500"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Step 3: Compare Content */}
-          <div className={`rounded-lg border ${isStep3Enabled ? 'border-brand-200' : 'border-gray-200'} p-6 ${!isStep3Enabled && 'opacity-50'}`}>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
-                <span className="text-brand-600 dark:text-brand-400 font-semibold">3</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-12">
+                {/* Step 1.1: Client Source Selection */}
+                <FileUpload
+                  onDataLoaded={setSource2Data}
+                  label="1.1 Client Source Selection"
+                  allowClientSource={true}
+                  step={1}
+                  isEnabled={true}
+                />
+                {/* Step 1.2: Amazon Current Content */}
+                <FileUpload
+                  onDataLoaded={setSource1Data}
+                  label="1.2 Upload Amazon Current Content"
+                  step={2}
+                  isEnabled={isStep2Enabled}
+                />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Compare Content
-              </h3>
             </div>
 
-            <button
-              onClick={handleComparison}
-              disabled={!isStep3Enabled}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              <FileCheck className="w-5 h-5 mr-2" />
-              Compare Content
-            </button>
+            {/* Step 2: Select Fields to Compare */}
+            <div className="mb-8">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
+                  <span className="text-brand-600 dark:text-brand-400 font-semibold">2</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  Select Fields to Compare
+                </h3>
+              </div>
+
+              <div className="ml-12">
+                <button
+                  onClick={() => setShowFieldSelector(!showFieldSelector)}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400"
+                >
+                  <Settings className="w-5 h-5 mr-2" />
+                  Select Fields
+                </button>
+                
+                {showFieldSelector && (
+                  <div className="mt-4 w-full max-w-2xl bg-white p-6 rounded-lg shadow-lg">
+                    <div className="grid grid-cols-2 gap-4">
+                      {Object.entries(AVAILABLE_FIELDS).map(([key, label]) => (
+                        <label key={key} className="flex items-center space-x-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedFields[key]}
+                            onChange={(e) => setSelectedFields(prev => ({
+                              ...prev,
+                              [key]: e.target.checked
+                            }))}
+                            className="h-4 w-4 text-brand-400 focus:ring-brand-400 border-gray-300 rounded"
+                          />
+                          <span className="text-gray-700">{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 3: Compare Content */}
+            <div className="mb-8">
+              <div className="flex items-center space-x-4 mb-6">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
+                  <span className="text-brand-600 dark:text-brand-400 font-semibold">3</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  Compare Content
+                </h3>
+              </div>
+
+              <div className="ml-12">
+                <button
+                  onClick={handleComparison}
+                  disabled={!isStep3Enabled}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  <FileCheck className="w-5 h-5 mr-2" />
+                  Compare Content
+                </button>
+
+                {showWarning && (
+                  <div className="mt-4 w-full max-w-2xl bg-amber-50 border border-amber-200 rounded-lg p-4 relative">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <AlertTriangle className="h-5 w-5 text-amber-400" aria-hidden="true" />
+                      </div>
+                      <div className="ml-3">
+                        <h3 className="text-sm font-medium text-amber-800">Data Accuracy Warning</h3>
+                        <div className="mt-2 text-sm text-amber-700">
+                          <p>
+                            Please ensure your CSV files contain accurate and up-to-date data before comparing. 
+                            The quality of the comparison results depends on the accuracy of your input files.
+                          </p>
+                          <button
+                            onClick={downloadTemplate}
+                            className="mt-2 inline-flex items-center text-amber-800 hover:text-amber-900"
+                          >
+                            <Download className="w-4 h-4 mr-1" />
+                            Download CSV template
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowWarning(false)}
+                        className="absolute top-4 right-4 text-amber-400 hover:text-amber-500"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Results section */}
