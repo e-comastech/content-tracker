@@ -83,6 +83,11 @@ function AppContent() {
     fieldStats: {},
     results: [],
   });
+  const [currentStep, setCurrentStep] = useState(1);
+
+  // Determine if steps are enabled based on data
+  const isStep2Enabled = source2Data.length > 0; // Source of truth data loaded
+  const isStep3Enabled = source1Data.length > 0 && source2Data.length > 0; // Both data sources loaded
 
   // Initialize user data from stored credential
   useEffect(() => {
@@ -333,15 +338,29 @@ function AppContent() {
       <div className="flex-grow dark:bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
+                  <span className="text-brand-600 dark:text-brand-400 font-semibold">1</span>
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  Select Client & Source of Truth
+                </h3>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FileUpload
-                onDataLoaded={setSource1Data}
-                label="Upload Amazon Current Content (CSV)"
+                onDataLoaded={setSource2Data}
+                label="Select Client & Source of Truth"
+                allowClientSource={true}
+                step={1}
+                isEnabled={true}
               />
               <FileUpload
-                onDataLoaded={setSource2Data}
-                label="Upload Source of Truth (CSV)"
-                allowClientSource={true}
+                onDataLoaded={setSource1Data}
+                label="Upload Amazon Current Content"
+                step={2}
+                isEnabled={isStep2Enabled}
               />
             </div>
             <div className="mt-4 flex flex-col items-center space-y-4">
@@ -377,8 +396,8 @@ function AppContent() {
 
               <button
                 onClick={handleComparison}
-                disabled={source1Data.length === 0 || source2Data.length === 0 || !Object.values(selectedFields).some(v => v)}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 disabled:bg-gray-400"
+                disabled={!isStep3Enabled}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <FileCheck className="w-5 h-5 mr-2" />
                 Compare Content
@@ -418,6 +437,28 @@ function AppContent() {
             </div>
           </div>
 
+          {/* Step 3: Compare Content */}
+          <div className={`rounded-lg border ${isStep3Enabled ? 'border-brand-200' : 'border-gray-200'} p-6 ${!isStep3Enabled && 'opacity-50'}`}>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900 flex items-center justify-center">
+                <span className="text-brand-600 dark:text-brand-400 font-semibold">3</span>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                Compare Content
+              </h3>
+            </div>
+
+            <button
+              onClick={handleComparison}
+              disabled={!isStep3Enabled}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <FileCheck className="w-5 h-5 mr-2" />
+              Compare Content
+            </button>
+          </div>
+
+          {/* Results section */}
           {filteredResults.length > 0 && (
             <>
               <Dashboard stats={statistics} selectedMarketplace={selectedMarketplace} selectedFields={selectedFields} />
@@ -427,7 +468,7 @@ function AppContent() {
                   className="inline-flex items-center px-6 py-3 border border-transparent text-lg font-medium rounded-md text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 shadow-lg transform transition-all duration-200 hover:scale-105"
                 >
                   <FileOutput className="w-6 h-6 mr-2" />
-                  {showOpenCasesAssistant ? 'Close Content Update Manager' : 'Open Content Update Manager'}
+                  {showOpenCasesAssistant ? 'Close Cases Assistant' : 'Open Cases Assistant'}
                 </button>
               </div>
               {showOpenCasesAssistant ? (
