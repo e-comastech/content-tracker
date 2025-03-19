@@ -23,7 +23,9 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
   const [isLoadingSource, setIsLoadingSource] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const MASTER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1BPerEt9xtrm4rT_oedPbUBMT6vOIlyZTeMaaKOAVnTA/export?format=csv';
+  // Extract the sheet ID from the full URL
+  const SHEET_ID = '1BPerEt9xtrm4rT_oedPbUBMT6vOIlyZTeMaaKOAVnTA';
+  const MASTER_SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
 
   useEffect(() => {
     fetchClients();
@@ -39,7 +41,16 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
         throw new Error('Failed to fetch client list');
       }
 
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('Unable to access the sheet. Please make sure it\'s shared with "Anyone with the link can view" access.');
+      }
+
       const csvText = await response.text();
+      if (csvText.toLowerCase().includes('<!doctype html>')) {
+        throw new Error('Received HTML instead of CSV. Please check sheet sharing settings.');
+      }
+
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
@@ -107,12 +118,27 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
     setIsLoadingSource(true);
 
     try {
-      const response = await fetch(client.sourceUrl);
+      // Convert the view/edit URL to an export URL
+      const sourceUrl = new URL(client.sourceUrl);
+      const urlParts = sourceUrl.pathname.split('/');
+      const sheetId = urlParts[urlParts.indexOf('d') + 1];
+      const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+
+      const response = await fetch(exportUrl);
       if (!response.ok) {
         throw new Error(`Failed to fetch source data for ${client.name}`);
       }
 
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error(`Unable to access the source sheet for ${client.name}. Please make sure it's shared with "Anyone with the link can view" access.`);
+      }
+
       const csvText = await response.text();
+      if (csvText.toLowerCase().includes('<!doctype html>')) {
+        throw new Error(`Received HTML instead of CSV for ${client.name}. Please check sheet sharing settings.`);
+      }
+
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
