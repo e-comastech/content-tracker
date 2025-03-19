@@ -9,18 +9,12 @@
   status = 200
 
 [[redirects]]
-  from = "/pbi_accuracy/*"
-  to = "/pbi_accuracy/index.html"
-  status = 200
-  force = true
-
-[[redirects]]
   from = "/*"
   to = "/landing/index.html"
   status = 200
 
 [build]
-  command = "npm run build && cd pbi_accuracy && npm install && npm run build"
+  command = "npm run build"
   publish = "dist"
 
 [[headers]]
