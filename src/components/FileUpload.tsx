@@ -27,17 +27,29 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       throw new Error('No valid data found in the file');
     }
 
-    const requiredFields = ['ASIN', 'Marketplace'];
+    // Get all available headers from the first row
+    const availableHeaders = Object.keys(data[0] || {}).map(header => header.trim().toLowerCase());
+    console.log('Available headers:', availableHeaders);
+
+    const requiredFields = ['asin', 'marketplace'];
     const missingFields = requiredFields.filter(field => 
-      !data.some(row => row[field as keyof ProductData])
+      !availableHeaders.includes(field.toLowerCase())
     );
 
     if (missingFields.length > 0) {
-      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}. Available fields: ${availableHeaders.join(', ')}`);
     }
 
-    // Filter out invalid rows
-    return data.filter(row => row.ASIN && row.Marketplace);
+    // Filter out invalid rows and normalize field names
+    return data.filter(row => {
+      const hasAsin = Object.keys(row).some(key => 
+        key.toLowerCase() === 'asin' && row[key]
+      );
+      const hasMarketplace = Object.keys(row).some(key => 
+        key.toLowerCase() === 'marketplace' && row[key]
+      );
+      return hasAsin && hasMarketplace;
+    });
   };
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +63,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     Papa.parse(file, {
       complete: (results) => {
         try {
+          console.log('Parsed data first row:', results.data[0]);
           const validData = validateData(results.data as ProductData[]);
           setDataCount(validData.length);
           onDataLoaded(validData);
@@ -70,7 +83,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       header: true,
       skipEmptyLines: true,
       transformHeader: (header: string) => {
-        return header.trim().replace(/\s+/g, '');
+        // Normalize headers: trim whitespace and convert to standard format
+        const normalizedHeader = header.trim().replace(/\s+/g, '');
+        console.log(`Header transformation: "${header}" -> "${normalizedHeader}"`);
+        return normalizedHeader;
       }
     });
   }, [onDataLoaded]);

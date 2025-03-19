@@ -72,16 +72,29 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
       throw new Error('No valid data found in the source file');
     }
 
-    const requiredFields = ['ASIN', 'Marketplace'];
+    // Get all available headers from the first row
+    const availableHeaders = Object.keys(data[0] || {}).map(header => header.trim().toLowerCase());
+    console.log('Client source available headers:', availableHeaders);
+
+    const requiredFields = ['asin', 'marketplace'];
     const missingFields = requiredFields.filter(field => 
-      !data.some(row => row[field as keyof ProductData])
+      !availableHeaders.includes(field.toLowerCase())
     );
 
     if (missingFields.length > 0) {
-      throw new Error(`Missing required fields in source file: ${missingFields.join(', ')}`);
+      throw new Error(`Missing required fields in source file: ${missingFields.join(', ')}. Available fields: ${availableHeaders.join(', ')}`);
     }
 
-    return data.filter(row => row.ASIN && row.Marketplace);
+    // Filter out invalid rows and normalize field names
+    return data.filter(row => {
+      const hasAsin = Object.keys(row).some(key => 
+        key.toLowerCase() === 'asin' && row[key]
+      );
+      const hasMarketplace = Object.keys(row).some(key => 
+        key.toLowerCase() === 'marketplace' && row[key]
+      );
+      return hasAsin && hasMarketplace;
+    });
   };
 
   const handleClientChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -105,6 +118,7 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
         skipEmptyLines: true,
         complete: (results) => {
           try {
+            console.log('Client source parsed data first row:', results.data[0]);
             const validData = validateSourceData(results.data as ProductData[]);
             onSourceDataLoaded(validData);
             setIsLoadingSource(false);
@@ -118,7 +132,10 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
           setIsLoadingSource(false);
         },
         transformHeader: (header: string) => {
-          return header.trim().replace(/\s+/g, '');
+          // Normalize headers: trim whitespace and convert to standard format
+          const normalizedHeader = header.trim().replace(/\s+/g, '');
+          console.log(`Client source header transformation: "${header}" -> "${normalizedHeader}"`);
+          return normalizedHeader;
         }
       });
     } catch (err) {
