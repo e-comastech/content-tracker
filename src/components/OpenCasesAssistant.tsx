@@ -164,8 +164,8 @@ export const OpenCasesAssistant: React.FC<OpenCasesAssistantProps> = ({
       { header: 'Needs Update', width: 15 },
       { header: 'Overall Match %', width: 15 },
       ...selectedFieldKeys.flatMap(field => [
-        { header: `${field} - Current`, width: 40 },
-        { header: `${field} - New`, width: 40 },
+        { header: `${field} - Current on Amazon`, width: 40 },
+        { header: `${field} - Required Content`, width: 40 },
         { header: `${field} - Match %`, width: 15 }
       ])
     ];
