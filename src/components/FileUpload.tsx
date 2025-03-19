@@ -1,16 +1,23 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, CheckCircle } from 'lucide-react';
+import { Upload, CheckCircle, FileUp } from 'lucide-react';
 import Papa from 'papaparse';
 import { ProductData } from '../types';
+import { ClientSelector } from './ClientSelector';
 
 interface FileUploadProps {
   onDataLoaded: (data: ProductData[]) => void;
   label: string;
+  allowClientSource?: boolean;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded, label }) => {
+export const FileUpload: React.FC<FileUploadProps> = ({ 
+  onDataLoaded, 
+  label,
+  allowClientSource = false
+}) => {
   const [isUploaded, setIsUploaded] = useState(false);
   const [fileName, setFileName] = useState<string>('');
+  const [uploadMode, setUploadMode] = useState<'manual' | 'client'>('manual');
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -34,6 +41,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded, label }) =
     });
   }, [onDataLoaded]);
 
+  const handleClientSourceData = (data: ProductData[]) => {
+    const validData = data.filter(row => row.ASIN);
+    onDataLoaded(validData);
+    setIsUploaded(true);
+  };
+
   const getLabel = () => {
     if (label.includes('Source 1')) {
       return 'Amazon Current Content';
@@ -48,6 +61,92 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onDataLoaded, label }) =
     return "CSV file with headers: ASIN, Marketplace, ProductTitle, Description, BulletPoint1-5, Variations";
   };
 
+  if (allowClientSource) {
+    return (
+      <div className="space-y-4">
+        <div className="flex space-x-4 mb-4">
+          <button
+            onClick={() => setUploadMode('manual')}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              uploadMode === 'manual'
+                ? 'bg-brand-400 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            <FileUp className="w-4 h-4 inline mr-2" />
+            Manual Upload
+          </button>
+          <button
+            onClick={() => setUploadMode('client')}
+            className={`px-4 py-2 text-sm font-medium rounded-md ${
+              uploadMode === 'client'
+                ? 'bg-brand-400 text-white'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            <Upload className="w-4 h-4 inline mr-2" />
+            Client Source
+          </button>
+        </div>
+
+        {uploadMode === 'manual' ? (
+          <div className="w-full">
+            <label 
+              className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 ${
+                isUploaded 
+                  ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50' 
+                  : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                {isUploaded ? (
+                  <CheckCircle className="w-8 h-8 mb-2 text-green-500 dark:text-green-400" />
+                ) : (
+                  <Upload className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
+                )}
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span className="font-semibold">{getLabel()}</span>
+                </p>
+                {!isUploaded && (
+                  <>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      Drop your CSV file here or click to browse
+                    </p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 text-center max-w-[80%]">
+                      {getFormatExplanation()}
+                    </p>
+                  </>
+                )}
+                {isUploaded && (
+                  <>
+                    <p className="text-xs text-green-500 dark:text-green-400">
+                      File uploaded successfully
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {fileName}
+                    </p>
+                  </>
+                )}
+              </div>
+              <input
+                type="file"
+                className="hidden"
+                accept=".csv"
+                onChange={handleFileUpload}
+              />
+            </label>
+          </div>
+        ) : (
+          <ClientSelector 
+            onClientSelect={() => {}} 
+            onSourceDataLoaded={handleClientSourceData}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Original file upload UI for non-client-source components
   return (
     <div className="w-full">
       <label 

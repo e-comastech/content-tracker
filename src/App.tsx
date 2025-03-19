@@ -341,6 +341,7 @@ function AppContent() {
               <FileUpload
                 onDataLoaded={setSource2Data}
                 label="Upload Source of Truth (CSV)"
+                allowClientSource={true}
               />
             </div>
             <div className="mt-4 flex flex-col items-center space-y-4">
