@@ -541,7 +541,7 @@ function App() {
       <div className="min-h-screen bg-brand-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-center mb-4">
-            <img src="/cct-logo.png" alt="Content Comparison Tool" className="h-16 w-auto" />
+            <img src="cct-logo.png" alt="Content Comparison Tool" className="h-16 w-auto" />
           </div>
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Error</h2>
