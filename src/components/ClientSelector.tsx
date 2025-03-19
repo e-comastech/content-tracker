@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Users, Loader2 } from 'lucide-react';
-import Papa from 'papaparse';
+import React, { useEffect, useState } from 'react';
+import { Loader2, AlertCircle } from 'lucide-react';
+import Papa, { ParseError } from 'papaparse';
+import { ProductData } from '../types';
 
 interface Client {
   name: string;
@@ -8,95 +9,130 @@ interface Client {
 }
 
 interface ClientSelectorProps {
-  onClientSelect: (client: Client | null) => void;
-  onSourceDataLoaded: (data: any[]) => void;
+  onClientSelect: (client: Client) => void;
+  onSourceDataLoaded: (data: ProductData[]) => void;
 }
 
-export const ClientSelector: React.FC<ClientSelectorProps> = ({ 
+export const ClientSelector: React.FC<ClientSelectorProps> = ({
   onClientSelect,
-  onSourceDataLoaded
+  onSourceDataLoaded,
 }) => {
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [loadingSource, setLoadingSource] = useState(false);
+  const [isLoadingClients, setIsLoadingClients] = useState(true);
+  const [isLoadingSource, setIsLoadingSource] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const MASTER_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1BPerEt9xtrm4rT_oedPbUBMT6vOIlyZTeMaaKOAVnTA/export?format=csv';
 
   useEffect(() => {
-    const fetchClients = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(MASTER_SHEET_URL);
-        const csvText = await response.text();
-        
-        Papa.parse(csvText, {
-          header: true,
-          complete: (results) => {
-            const clientList = results.data
-              .filter((row: any) => row['Client Name'] && row['Source of Truth URL'])
-              .map((row: any) => ({
-                name: row['Client Name'],
-                sourceUrl: row['Source of Truth URL'].replace('/edit?', '/export?format=csv&')
-              }));
-            setClients(clientList);
-          },
-          error: (error) => {
-            setError('Failed to parse client list: ' + error.message);
-          }
-        });
-      } catch (err) {
-        setError('Failed to fetch client list');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchClients();
   }, []);
 
-  const handleClientChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const clientName = event.target.value;
-    if (!clientName) {
-      setSelectedClient(null);
-      onClientSelect(null);
-      return;
-    }
+  const fetchClients = async () => {
+    setIsLoadingClients(true);
+    setError(null);
 
-    const client = clients.find(c => c.name === clientName) || null;
-    setSelectedClient(client);
-    onClientSelect(client);
-
-    if (client) {
-      setLoadingSource(true);
-      try {
-        const response = await fetch(client.sourceUrl);
-        const csvText = await response.text();
-        
-        Papa.parse(csvText, {
-          header: true,
-          complete: (results) => {
-            onSourceDataLoaded(results.data);
-          },
-          error: (error) => {
-            setError('Failed to parse source data: ' + error.message);
-          }
-        });
-      } catch (err) {
-        setError('Failed to fetch source data');
-      } finally {
-        setLoadingSource(false);
+    try {
+      const response = await fetch(MASTER_SHEET_URL);
+      if (!response.ok) {
+        throw new Error('Failed to fetch client list');
       }
+
+      const csvText = await response.text();
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const clientData = results.data.map((row: any) => ({
+            name: row['Client Name'],
+            sourceUrl: row['Source of Truth URL']
+          })).filter(client => client.name && client.sourceUrl);
+
+          if (clientData.length === 0) {
+            setError('No valid clients found in the master sheet');
+          } else {
+            setClients(clientData);
+          }
+          setIsLoadingClients(false);
+        },
+        error: (error: ParseError) => {
+          setError(`Failed to parse client list: ${error.message}`);
+          setIsLoadingClients(false);
+        }
+      });
+    } catch (err) {
+      setError(`Failed to load client list: ${(err as Error).message}`);
+      setIsLoadingClients(false);
     }
   };
 
-  if (error) {
+  const validateSourceData = (data: ProductData[]) => {
+    if (!data || data.length === 0) {
+      throw new Error('No valid data found in the source file');
+    }
+
+    const requiredFields = ['ASIN', 'Marketplace'];
+    const missingFields = requiredFields.filter(field => 
+      !data.some(row => row[field as keyof ProductData])
+    );
+
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields in source file: ${missingFields.join(', ')}`);
+    }
+
+    return data.filter(row => row.ASIN && row.Marketplace);
+  };
+
+  const handleClientChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const client = clients.find(c => c.name === event.target.value);
+    if (!client) return;
+
+    setSelectedClient(client);
+    onClientSelect(client);
+    setError(null);
+    setIsLoadingSource(true);
+
+    try {
+      const response = await fetch(client.sourceUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch source data for ${client.name}`);
+      }
+
+      const csvText = await response.text();
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          try {
+            const validData = validateSourceData(results.data as ProductData[]);
+            onSourceDataLoaded(validData);
+            setIsLoadingSource(false);
+          } catch (err) {
+            setError((err as Error).message);
+            setIsLoadingSource(false);
+          }
+        },
+        error: (error: ParseError) => {
+          setError(`Failed to parse source data: ${error.message}`);
+          setIsLoadingSource(false);
+        },
+        transformHeader: (header: string) => {
+          return header.trim().replace(/\s+/g, '');
+        }
+      });
+    } catch (err) {
+      setError(`Failed to load source data: ${(err as Error).message}`);
+      setIsLoadingSource(false);
+    }
+  };
+
+  if (isLoadingClients) {
     return (
-      <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
-        <div className="flex items-center text-red-800 dark:text-red-300">
-          <span className="text-sm">{error}</span>
+      <div className="flex items-center justify-center h-40 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 mb-2 mx-auto text-brand-400 animate-spin" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading clients...</p>
         </div>
       </div>
     );
@@ -104,21 +140,21 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <label htmlFor="client-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Select Client
-        </label>
-        {loading && (
-          <Loader2 className="w-4 h-4 animate-spin text-brand-400" />
-        )}
-      </div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex">
+            <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+            <span className="text-sm text-red-700">{error}</span>
+          </div>
+        </div>
+      )}
+
       <div className="relative">
         <select
-          id="client-select"
-          className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-brand-400 focus:border-brand-400 sm:text-sm rounded-md dark:bg-gray-700 dark:text-gray-100"
+          className="w-full p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:border-brand-400 focus:ring-1 focus:ring-brand-400"
           onChange={handleClientChange}
           value={selectedClient?.name || ''}
-          disabled={loading}
+          disabled={isLoadingSource}
         >
           <option value="">Select a client...</option>
           {clients.map((client) => (
@@ -127,14 +163,19 @@ export const ClientSelector: React.FC<ClientSelectorProps> = ({
             </option>
           ))}
         </select>
-        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-          {loadingSource ? (
-            <Loader2 className="w-4 h-4 animate-spin text-brand-400" />
-          ) : (
-            <Users className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-          )}
-        </div>
+
+        {isLoadingSource && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-800/80 rounded-lg">
+            <Loader2 className="w-5 h-5 text-brand-400 animate-spin" />
+          </div>
+        )}
       </div>
+
+      {selectedClient && !error && !isLoadingSource && (
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          ✓ Source data loaded for {selectedClient.name}
+        </div>
+      )}
     </div>
   );
 }; 

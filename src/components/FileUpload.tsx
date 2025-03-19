@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, CheckCircle, FileUp } from 'lucide-react';
+import { Upload, CheckCircle, FileUp, Loader2, AlertCircle } from 'lucide-react';
 import Papa from 'papaparse';
 import { ProductData } from '../types';
 import { ClientSelector } from './ClientSelector';
@@ -18,33 +18,74 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const [isUploaded, setIsUploaded] = useState(false);
   const [fileName, setFileName] = useState<string>('');
   const [uploadMode, setUploadMode] = useState<'manual' | 'client'>('manual');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dataCount, setDataCount] = useState<number>(0);
+
+  const validateData = (data: ProductData[]) => {
+    if (!data || data.length === 0) {
+      throw new Error('No valid data found in the file');
+    }
+
+    const requiredFields = ['ASIN', 'Marketplace'];
+    const missingFields = requiredFields.filter(field => 
+      !data.some(row => row[field as keyof ProductData])
+    );
+
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
+
+    // Filter out invalid rows
+    return data.filter(row => row.ASIN && row.Marketplace);
+  };
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
+    setIsLoading(true);
+    setError(null);
 
     Papa.parse(file, {
       complete: (results) => {
-        // Filter out any rows that don't have an ASIN
-        const validData = (results.data as ProductData[]).filter(row => row.ASIN);
-        onDataLoaded(validData);
-        setIsUploaded(true);
+        try {
+          const validData = validateData(results.data as ProductData[]);
+          setDataCount(validData.length);
+          onDataLoaded(validData);
+          setIsUploaded(true);
+        } catch (err) {
+          setError((err as Error).message);
+          setIsUploaded(false);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      error: (error) => {
+        setError(`Failed to parse file: ${error.message}`);
+        setIsLoading(false);
+        setIsUploaded(false);
       },
       header: true,
       skipEmptyLines: true,
       transformHeader: (header: string) => {
-        // Ensure consistent header names
         return header.trim().replace(/\s+/g, '');
       }
     });
   }, [onDataLoaded]);
 
   const handleClientSourceData = (data: ProductData[]) => {
-    const validData = data.filter(row => row.ASIN);
-    onDataLoaded(validData);
-    setIsUploaded(true);
+    try {
+      const validData = validateData(data);
+      setDataCount(validData.length);
+      onDataLoaded(validData);
+      setIsUploaded(true);
+      setError(null);
+    } catch (err) {
+      setError((err as Error).message);
+      setIsUploaded(false);
+    }
   };
 
   const getLabel = () => {
@@ -66,7 +107,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       <div className="space-y-4">
         <div className="flex space-x-4 mb-4">
           <button
-            onClick={() => setUploadMode('manual')}
+            onClick={() => {
+              setUploadMode('manual');
+              setIsUploaded(false);
+              setError(null);
+            }}
             className={`px-4 py-2 text-sm font-medium rounded-md ${
               uploadMode === 'manual'
                 ? 'bg-brand-400 text-white'
@@ -77,7 +122,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             Manual Upload
           </button>
           <button
-            onClick={() => setUploadMode('client')}
+            onClick={() => {
+              setUploadMode('client');
+              setIsUploaded(false);
+              setError(null);
+            }}
             className={`px-4 py-2 text-sm font-medium rounded-md ${
               uploadMode === 'client'
                 ? 'bg-brand-400 text-white'
@@ -89,6 +138,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           </button>
         </div>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+            <div className="flex">
+              <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+              <span className="text-sm text-red-700">{error}</span>
+            </div>
+          </div>
+        )}
+
         {uploadMode === 'manual' ? (
           <div className="w-full">
             <label 
@@ -99,7 +157,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               }`}
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                {isUploaded ? (
+                {isLoading ? (
+                  <Loader2 className="w-8 h-8 mb-2 text-brand-400 animate-spin" />
+                ) : isUploaded ? (
                   <CheckCircle className="w-8 h-8 mb-2 text-green-500 dark:text-green-400" />
                 ) : (
                   <Upload className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
@@ -107,7 +167,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-semibold">{getLabel()}</span>
                 </p>
-                {!isUploaded && (
+                {!isUploaded && !isLoading && (
                   <>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                       Drop your CSV file here or click to browse
@@ -120,12 +180,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 {isUploaded && (
                   <>
                     <p className="text-xs text-green-500 dark:text-green-400">
-                      File uploaded successfully
+                      File processed successfully
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {fileName}
+                      {fileName} ({dataCount} products)
                     </p>
                   </>
+                )}
+                {isLoading && (
+                  <p className="text-xs text-brand-500 dark:text-brand-400">
+                    Processing file...
+                  </p>
                 )}
               </div>
               <input
@@ -133,6 +198,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                 className="hidden"
                 accept=".csv"
                 onChange={handleFileUpload}
+                disabled={isLoading}
               />
             </label>
           </div>
@@ -142,6 +208,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             onSourceDataLoaded={handleClientSourceData}
           />
         )}
+
+        {isUploaded && (
+          <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            ✓ {dataCount} products loaded and validated
+          </div>
+        )}
       </div>
     );
   }
@@ -149,6 +221,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   // Original file upload UI for non-client-source components
   return (
     <div className="w-full">
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <div className="flex">
+            <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+            <span className="text-sm text-red-700">{error}</span>
+          </div>
+        </div>
+      )}
+
       <label 
         className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200 ${
           isUploaded 
@@ -157,7 +238,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         }`}
       >
         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-          {isUploaded ? (
+          {isLoading ? (
+            <Loader2 className="w-8 h-8 mb-2 text-brand-400 animate-spin" />
+          ) : isUploaded ? (
             <CheckCircle className="w-8 h-8 mb-2 text-green-500 dark:text-green-400" />
           ) : (
             <Upload className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
@@ -165,7 +248,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
             <span className="font-semibold">{getLabel()}</span>
           </p>
-          {!isUploaded && (
+          {!isUploaded && !isLoading && (
             <>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
                 Drop your CSV file here or click to browse
@@ -178,12 +261,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           {isUploaded && (
             <>
               <p className="text-xs text-green-500 dark:text-green-400">
-                File uploaded successfully
+                File processed successfully
               </p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {fileName}
+                {fileName} ({dataCount} products)
               </p>
             </>
+          )}
+          {isLoading && (
+            <p className="text-xs text-brand-500 dark:text-brand-400">
+              Processing file...
+            </p>
           )}
         </div>
         <input
@@ -191,8 +279,15 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           className="hidden"
           accept=".csv"
           onChange={handleFileUpload}
+          disabled={isLoading}
         />
       </label>
+
+      {isUploaded && (
+        <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          ✓ {dataCount} products loaded and validated
+        </div>
+      )}
     </div>
   );
 };
