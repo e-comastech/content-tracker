@@ -351,7 +351,7 @@ function AppContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <FileUpload
                 onDataLoaded={setSource2Data}
-                label="Select Client & Source of Truth"
+                label="Client Source Selection"
                 allowClientSource={true}
                 step={1}
                 isEnabled={true}
