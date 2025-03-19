@@ -4,7 +4,7 @@ import { LoginPage } from './components/LoginPage';
 import { FileUpload } from './components/FileUpload';
 import { ComparisonTable } from './components/ComparisonTable';
 import { Dashboard } from './components/Dashboard';
-import { OpenCasesAssistant } from './components/OpenCasesAssistant';
+import { ContentUpdateManager } from './components/ContentUpdateManager';
 import { ProductData, ComparisonResult, Statistics, FieldSelection } from './types/index';
 import { compareProducts } from './utils/comparison';
 import { FileCheck, Settings, AlertTriangle, X, Download, Info, HelpCircle, FileOutput, Moon, Sun } from 'lucide-react';
@@ -426,11 +426,11 @@ function AppContent() {
                   className="inline-flex items-center px-6 py-3 border border-transparent text-lg font-medium rounded-md text-white bg-brand-400 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-400 shadow-lg transform transition-all duration-200 hover:scale-105"
                 >
                   <FileOutput className="w-6 h-6 mr-2" />
-                  {showOpenCasesAssistant ? 'Close Cases Assistant' : 'Open Cases Assistant'}
+                  {showOpenCasesAssistant ? 'Close Content Update Manager' : 'Open Content Update Manager'}
                 </button>
               </div>
               {showOpenCasesAssistant ? (
-                <OpenCasesAssistant 
+                <ContentUpdateManager 
                   results={filteredResults} 
                   selectedFields={selectedFields}
                   selectedMarketplace={selectedMarketplace}
