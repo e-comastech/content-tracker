@@ -7,7 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { ContentUpdateManager } from './components/ContentUpdateManager';
 import { ProductData, ComparisonResult, Statistics, FieldSelection } from './types/index';
 import { compareProducts } from './utils/comparison';
-import { FileCheck, Settings, AlertTriangle, X, Download, Info, HelpCircle, FileOutput, Moon, Sun } from 'lucide-react';
+import { FileCheck, Settings, AlertTriangle, X, Download, Info, HelpCircle, FileOutput, Moon, Sun, AlertCircle } from 'lucide-react';
 import Papa from 'papaparse';
 import { UserProvider, useUser } from './contexts/UserContext';
 
@@ -534,11 +534,46 @@ function AppContent() {
 }
 
 function App() {
+  const [oauthError, setOauthError] = useState<string | null>(null);
+
+  if (oauthError) {
+    return (
+      <div className="min-h-screen bg-brand-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-6">
+          <div className="flex items-center justify-center mb-4">
+            <img src="/cct-logo.png" alt="Content Comparison Tool" className="h-16 w-auto" />
+          </div>
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Error</h2>
+            <p className="text-sm text-gray-600 mb-4">{oauthError}</p>
+            <div className="text-xs text-gray-500 mb-4">
+              Error occurred at: {window.location.href}
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-brand-400 hover:bg-brand-500"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Log the current URL and client ID for debugging
+  console.log('Current URL:', window.location.href);
+  console.log('OAuth Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
   return (
     <GoogleOAuthProvider 
       clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
-      onScriptLoadError={() => console.error('Failed to load Google OAuth script')}
-      onScriptLoadSuccess={() => console.log('Google OAuth script loaded successfully')}
+      onScriptLoadError={() => {
+        console.error('Failed to load Google OAuth script');
+        console.error('Current URL:', window.location.href);
+        console.error('Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+        setOauthError('Failed to initialize Google Sign-In. Please check your network connection and try again. If the issue persists, please contact support.');
+      }}
     >
       <UserProvider>
         <AppContent />

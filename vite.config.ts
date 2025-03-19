@@ -8,7 +8,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  base: '',
+  base: '/cct/',
   build: {
     outDir: 'dist',
     rollupOptions: {
